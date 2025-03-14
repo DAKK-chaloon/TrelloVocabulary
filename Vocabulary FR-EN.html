@@ -1,0 +1,3166 @@
+<!DOCTYPE html>
+<html lang="zh">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>词汇表 - Catégories imbriquées</title>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="https://code.responsivevoice.org/responsivevoice.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Nunito', 'Microsoft YaHei', Arial, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f8f1f7 0%, #edf6ff 100%);
+            background-attachment: fixed;
+            padding: 20px;
+            color: #5a5a5a;
+        }
+
+        h1 {
+            text-align: center;
+            color: #f7ada3;
+            margin-bottom: 25px;
+            font-weight: 700;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+            background: white;
+            max-width: 400px;
+            margin: 0 auto 10px;
+            padding: 10px;
+            border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border: 3px solid #edc9b8;
+            font-family: 'Fredoka One', cursive;
+            letter-spacing: 1px;
+            transform: rotate(-2deg);
+            transition: transform 0.3s;
+        }
+
+        h1:hover {
+            transform: rotate(2deg);
+        }
+
+        .board {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 5px;
+            min-height: 500px;
+            align-items: flex-start;
+        }
+
+        /* Stats bar */
+        .stats-bar {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            max-width: 900px;
+            margin: 20px auto;
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            border: 2px solid #a3b75e;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: bold;
+            color: #9e7bb5;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .xp-bar-container {
+            flex-grow: 1;
+            height: 20px;
+            background: #f0f0f0;
+            border-radius: 10px;
+            margin: 0 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .xp-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #a3b75e, #5fb6ce);
+            border-radius: 10px;
+            width: 35%;
+            transition: width 1s;
+        }
+
+        .level-badge {
+            background: #f7ada3;
+            color: white;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Actions bar */
+        .actions-bar {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            max-width: 900px;
+            margin: 0 auto 20px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            background: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-weight: bold;
+            color: #5a5a5a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-btn.primary {
+            background: #a3b75e;
+            color: white;
+            border-color: #95a754;
+        }
+
+        .action-btn.secondary {
+            background: #f7ada3;
+            color: white;
+            border-color: #e89d93;
+        }
+
+        .action-btn.tertiary {
+            background: #c091ae ;
+            color: white;
+            border-color: #AC819A ;
+        }
+
+        /* Categories et sous-catégories */
+        .category-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            width: 300px;
+            /* Largeur fixe */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .category-container {
+            resize: horizontal;
+            /* Permet de redimensionner horizontalement */
+            overflow: auto;
+            /* Ajoute des barres de défilement si nécessaire */
+            min-width: 350px;
+            /* Largeur minimale */
+            max-width: 100%;
+            /* Largeur maximale */
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #c091ae 0%, #AC819A 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 18px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .category-toggle {
+            transition: transform 0.3s;
+        }
+
+        .category-collapsed .category-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .category-content {
+            padding: 0 15px 15px 15px;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+
+        .category-content,
+        .folder-content {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            /* S'adapte à la largeur du conteneur parent */
+        }
+
+        .category-collapsed .category-content {
+            max-height: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            opacity: 0;
+        }
+
+        .category-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .category-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .category-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Sous-catégories (imbriquées) */
+        .subcategory-container {
+            display: inline-block;
+            /* Nouveau */
+            width: auto;
+            /* Nouveau */
+            max-width: 100%;
+            /* Nouveau */
+
+        }
+
+        .subcategory-container .category-header {
+            background: linear-gradient(135deg, #5fb6ce 0%, #4a9fba 100%);
+        }
+
+        .subcategories-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px 0 0 0;
+        }
+
+        .subcategories-container,
+        .folders-container {
+            width: 100%;
+            /* S'adapte à la largeur du conteneur parent */
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Dossiers */
+        .folders-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .folder-container {
+            width: 100%;
+            /* Prendre toute la largeur du conteneur parent */
+            padding: 10px 0 0 0;
+        }
+
+        .folder-container:not(.folder-collapsed) {
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+            transform: translateY(0);
+            border-radius: 20px;
+            padding: 10px 0 0 0;
+        }
+
+        .folder-collapsed {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            transform: translateY(5px);
+        }
+
+        .folder-container .folder-header {
+            background: linear-gradient(135deg, #f7ada3 0%, #f8938b 100%);
+            color: white;
+            border-radius: 15px 15px 0 0;
+            padding: 15px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .folder-collapsed .folder-header {
+            border-radius: 15px;
+        }
+
+        .folder-header {
+            background: linear-gradient(135deg, #f7ada3 0%, #f8938b 100%);
+            color: white;
+            padding: 15px;
+            cursor: pointer;
+            /* Nouveau */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .folder-collapsed .folder-content {
+            display: none;
+        }
+
+        .folder-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .folder-toggle {
+            transition: transform 0.3s;
+        }
+
+        .folder-collapsed .folder-toggle {
+            transform: rotate(-90deg);
+        }
+
+        .folder-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .folder-btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .folder-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .folder-content {
+            background: white;
+            padding: 15px;
+            border-radius: 0 0 15px 15px;
+            border: 2px solid #edc9b8;
+            border-top: none;
+        }
+
+        /* Drag & Drop styles */
+        .drag-handle {
+            cursor: grab;
+            margin-right: 8px;
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .drag-handle:hover {
+            color: white;
+        }
+
+        .drag-placeholder {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            margin: 10px 0;
+            height: 60px;
+        }
+
+        .word-list {
+            min-height: 100px;
+            padding: 10px;
+            background: #e5f0f9;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            overflow-y: auto;
+            max-height: 400px;
+            scrollbar-width: thin;
+        }
+
+        .word-list {
+            width: 100%;
+            /* S'adapte à la largeur du conteneur parent */
+        }
+
+        .word-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .word-list::-webkit-scrollbar-thumb {
+            background: #c3dfeb;
+            border-radius: 10px;
+        }
+
+        .word-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.05);
+            cursor: grab;
+            position: relative;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid transparent;
+            overflow: hidden;
+        }
+
+        .word-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 6px;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .word-item:nth-child(4n+1)::before {
+            background-color: #f7ada3;
+            /* Salmon */
+        }
+
+        .word-item:nth-child(4n+2)::before {
+            background-color: #c3dfeb;
+            /* Light blue */
+        }
+
+        .word-item:nth-child(4n+3)::before {
+            background-color: #edc9b8;
+            /* Light peach */
+        }
+
+        .word-item:nth-child(4n+4)::before {
+            background-color: #a3b75e;
+            /* Green */
+        }
+
+        .word-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Stars for mastery */
+        .mastery-stars {
+            position: absolute;
+            top: 10px;
+            left: 20px;
+            color: gold;
+            font-size: 12px;
+            display: flex;
+            gap: 2px;
+        }
+
+        .star {
+            opacity: 0.3;
+            transition: all 0.2s ease;
+        }
+
+        .star.active {
+            opacity: 1;
+        }
+
+        .word-item[data-mastery="1"] .star:nth-child(1),
+        .word-item[data-mastery="2"] .star:nth-child(1),
+        .word-item[data-mastery="2"] .star:nth-child(2),
+        .word-item[data-mastery="3"] .star:nth-child(1),
+        .word-item[data-mastery="3"] .star:nth-child(2),
+        .word-item[data-mastery="3"] .star:nth-child(3),
+        .word-item[data-mastery="4"] .star:nth-child(1),
+        .word-item[data-mastery="4"] .star:nth-child(2),
+        .word-item[data-mastery="4"] .star:nth-child(3),
+        .word-item[data-mastery="4"] .star:nth-child(4),
+        .word-item[data-mastery="5"] .star:nth-child(1),
+        .word-item[data-mastery="5"] .star:nth-child(2),
+        .word-item[data-mastery="5"] .star:nth-child(3),
+        .word-item[data-mastery="5"] .star:nth-child(4),
+        .word-item[data-mastery="5"] .star:nth-child(5) {
+            opacity: 1;
+        }
+
+        .word-text {
+            font-weight: bold;
+            font-size: 18px;
+            color: #333;
+            margin-top: 15px;
+        }
+
+        .phonetic {
+            font-size: 12px;
+            color: #888;
+            margin: 4px 0;
+        }
+
+        .chinese {
+            font-size: 16px;
+            color: #f7ada3;
+            font-weight: bold;
+            margin-top: 6px;
+        }
+
+        .gender {
+            font-size: 12px;
+            color: #a3b75e;
+            font-style: italic;
+        }
+
+        .word-type {
+            font-size: 12px;
+            color: #9e7bb5;
+            font-style: italic;
+            margin-left: 6px;
+        }
+
+        .comment {
+            margin-top: 12px;
+            color: #5a5a5a;
+            font-size: 14px;
+            padding-top: 8px;
+            border-top: 1px dashed #eee;
+            position: relative;
+        }
+
+        .comment-text {
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .comment-placeholder {
+            color: #aaa;
+            font-style: italic;
+            cursor: pointer;
+        }
+
+        .comment-edit-btn {
+            position: absolute;
+            right: 0;
+            top: 8px;
+            background: transparent;
+            color: #c3dfeb;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+        }
+
+        .comment-input {
+            width: 100%;
+            min-height: 60px;
+            padding: 8px;
+            border: 1px solid #c3dfeb;
+            border-radius: 6px;
+            margin-top: 5px;
+            font-size: 14px;
+            resize: vertical;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 5px;
+        }
+
+        .comment-save-btn,
+        .comment-cancel-btn {
+            padding: 6px 12px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .comment-save-btn {
+            background: #a3b75e;
+            color: white;
+        }
+
+        .comment-cancel-btn {
+            background: #eee;
+            color: #5a5a5a;
+        }
+
+        .play-button {
+            position: absolute;
+            top: 40px;
+            right: 10px;
+            background: transparent;
+            color: #a3b75e;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.2s ease;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+
+        .play-button:hover {
+            transform: scale(1.2);
+        }
+
+        .delete-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: transparent;
+            color: #f7ada3;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+
+        .delete-button:hover {
+            transform: scale(1.2);
+            color: #e9857a;
+        }
+
+        .add-word-container {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+            background: #edc9b8;
+            padding: 12px;
+            border-radius: 10px;
+            border: 1px solid #f7ada3;
+        }
+
+        .add-word-container {
+            width: 100%;
+            /* S'adapte à la largeur du conteneur parent */
+            display: flex;
+            flex-direction: column;
+        }
+
+
+        .add-word-input {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #d9d9d9;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-right: 5px;
+            transition: all 0.3s ease;
+            margin-bottom: 8px;
+        }
+
+        .add-word-input {
+            width: 100%;
+            /* Occupe toute la largeur */
+            box-sizing: border-box;
+            /* Inclut le padding et la bordure dans la largeur */
+        }
+
+        .add-word-input:focus {
+            border-color: #f7ada3;
+            box-shadow: 0 0 0 2px rgba(229, 131, 118, 0.2);
+            outline: none;
+        }
+
+        .add-word-btn {
+            background: #f7ada3;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .add-word-btn:hover {
+            background: #e9857a;
+            transform: translateY(-2px);
+        }
+
+        .add-category-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .add-category-btn {
+            background: #9e7bb5;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            padding: 12px 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .add-category-btn:hover {
+            background: #8a6ba1;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .language-toggle {
+            display: flex;
+            background: #edc9b8;
+            border-radius: 50px;
+            overflow: hidden;
+            width: 70%;
+            max-width: 500px;
+            margin: 10px auto 20px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+            border: 2px solid white;
+            position: sticky;
+            top: 10px;
+            z-index: 100;
+        }
+
+        .language-toggle button {
+            flex: 1;
+            background: transparent;
+            color: #5a5a5a;
+            border: none;
+            padding: 12px;
+            margin: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 0;
+            font-weight: 600;
+        }
+
+        .language-toggle button.active {
+            background: #f7ada3;
+            color: white;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 85px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .notification-icon {
+            width: 36px;
+            height: 36px;
+            background: #f7ada3;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .notification-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .notification-title {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .notification-message {
+            color: #888;
+            font-size: 14px;
+        }
+
+        /* Modals */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(3px);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            width: 350px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            border: 3px solid #edc9b8;
+            transform: translateY(30px);
+            opacity: 0;
+            animation: modal-appear 0.3s forwards;
+        }
+
+        @keyframes modal-appear {
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-content h3 {
+            margin-bottom: 20px;
+            color: #f7ada3;
+            text-align: center;
+            font-size: 22px;
+        }
+
+        .modal-content input,
+        .modal-content select {
+            margin-bottom: 15px;
+            border: 1px solid #edc9b8;
+            padding: 15px;
+            font-size: 16px;
+            border-radius: 10px;
+            width: 100%;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .modal-buttons button {
+            flex: 1;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .confirm-button {
+            background: #f7ada3;
+            color: white;
+            font-weight: bold;
+        }
+
+        .confirm-button:hover {
+            background: #e9857a;
+        }
+
+        .cancel-button {
+            background: #c3dfeb;
+            color: #5a5a5a;
+        }
+
+        .cancel-button:hover {
+            background: #a3c9e0;
+        }
+
+        .confirm-delete-text {
+            margin-bottom: 20px;
+            text-align: center;
+            color: #5a5a5a;
+        }
+
+        .subfolder-container {
+            display: inline-block;
+            width: auto;
+            max-width: 100%;
+        }
+
+        /* Media queries */
+        @media (max-width: 768px) {
+            .stats-bar {
+                flex-direction: column;
+                gap: 15px;
+                padding: 15px;
+            }
+
+            .folders-container,
+            .subcategories-container {
+                grid-template-columns: 1fr;
+                /* Une colonne sur mobile */
+            }
+
+            .category-container {
+                width: 100%;
+            }
+        }
+
+        /* Quiz modal */
+        #quizModal .modal-content {
+            width: 450px;
+        }
+
+        .quiz-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .quiz-word {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .quiz-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .quiz-option {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .quiz-option:hover {
+            background: #eee;
+            transform: translateY(-2px);
+        }
+
+        .quiz-option.selected {
+            background: #e5f0f9;
+            border-color: #c3dfeb;
+        }
+
+        .quiz-option.correct {
+            background: #e8f5e9;
+            border-color: #a3b75e;
+        }
+
+        .quiz-option.incorrect {
+            background: #ffebee;
+            border-color: #f7ada3;
+        }
+
+        .quiz-feedback {
+            text-align: center;
+            font-size: 18px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        .quiz-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .quiz-next,
+        .quiz-close {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            margin:5px
+        }
+
+        .quiz-next {
+            background: #a3b75e;
+            color: white;
+        }
+
+        .quiz-close {
+            background: #c3dfeb;
+            color: #333;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>词汇表</h1>
+
+    <!-- Stats bar -->
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="level-badge">1</div>
+            <div class="stat-label">级别</div>
+        </div>
+        <div class="xp-bar-container">
+            <div class="xp-bar"></div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">0</div>
+            <div class="stat-label">已学单词</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">0</div>
+            <div class="stat-label">掌握单词</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">0</div>
+            <div class="stat-label">今日学习</div>
+        </div>
+    </div>
+
+    <!-- Actions bar -->
+    <div class="actions-bar">
+        <button class="action-btn secondary" id="startQuizBtn">
+            <i class="fas fa-play-circle"></i> 开始测验
+        </button>
+        <!-- <button class="action-btn primary" id="badgesBtn">
+            <i class="fas fa-award"></i> 徽章
+        </button> -->
+        <button class="action-btn tertiary" id="addCategoryBtn">
+            <i class="fas fa-folder-plus"></i> 添加类别
+        </button>
+    </div>
+
+    <div class="language-toggle">
+        <button id="fr-to-en-btn" class="active">法语→英语</button>
+        <button id="en-to-fr-btn">英语→法语</button>
+    </div>
+
+    <div class="board" id="board"></div>
+
+    <div class="add-category-container">
+        <button class="add-category-btn" id="addRootCategoryBtn">
+            <i class="fas fa-plus-circle"></i> 添加根类别
+        </button>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        <div class="notification-icon">
+            <i class="fas fa-star"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">恭喜!</div>
+            <div class="notification-message">您获得了10个经验值!</div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div class="modal" id="categoryModal">
+        <div class="modal-content">
+            <h3>添加新类别</h3>
+            <input type="text" id="categoryNameInput" placeholder="类别名称">
+            <select id="parentCategorySelect">
+                <option value="">根类别 (无父类别)</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+            <div class="modal-buttons">
+                <button class="cancel-button" id="cancelCategoryButton">取消</button>
+                <button class="confirm-button" id="confirmCategoryButton">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editCategoryModal">
+        <div class="modal-content">
+            <h3>编辑类别</h3>
+            <input type="text" id="editCategoryNameInput" placeholder="类别名称">
+            <select id="editParentCategorySelect">
+                <option value="">根类别 (无父类别)</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+            <div class="modal-buttons">
+                <button class="cancel-button" id="cancelEditCategoryButton">取消</button>
+                <button class="confirm-button" id="confirmEditCategoryButton">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="folderModal">
+        <div class="modal-content">
+            <h3>添加新文件夹</h3>
+            <input type="text" id="folderNameInput" placeholder="文件夹名称">
+            <select id="folderCategorySelect">
+                <option value="">选择类别</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+            <div class="modal-buttons">
+                <button class="cancel-button" id="cancelFolderButton">取消</button>
+                <button class="confirm-button" id="confirmFolderButton">创建</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="editFolderModal">
+        <div class="modal-content">
+            <h3>编辑文件夹</h3>
+            <input type="text" id="editFolderNameInput" placeholder="文件夹名称">
+            <select id="editFolderCategorySelect">
+                <option value="">选择类别</option>
+                <!-- Options will be populated dynamically -->
+            </select>
+            <div class="modal-buttons">
+                <button class="cancel-button" id="cancelEditFolderButton">取消</button>
+                <button class="confirm-button" id="confirmEditFolderButton">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="deleteModal">
+        <div class="modal-content">
+            <h3>确认删除</h3>
+            <p class="confirm-delete-text" id="deleteModalText">您确定要删除这个项目吗？</p>
+            <div class="modal-buttons">
+                <button class="cancel-button" id="cancelDeleteButton">取消</button>
+                <button class="confirm-button" id="confirmDeleteButton">删除</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="quizModal">
+        <div class="modal-content">
+            <h3>词汇测验</h3>
+            <div class="quiz-container">
+                <div class="quiz-word">chien</div>
+                <div class="quiz-options">
+                    <div class="quiz-option">cat</div>
+                    <div class="quiz-option">dog</div>
+                    <div class="quiz-option">bird</div>
+                    <div class="quiz-option">fish</div>
+                </div>
+                <div class="quiz-feedback" style="display: none;">正确!</div>
+                <div class="quiz-buttons">
+                    <button class="quiz-next" id="quizNextBtn">下一题</button>
+                    <button class="quiz-close" id="quizCloseBtn">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Structure des données
+        let categories = JSON.parse(localStorage.getItem("categories")) || [];
+        let folders = JSON.parse(localStorage.getItem("folders")) || [];
+        let words = JSON.parse(localStorage.getItem("words")) || [];
+
+        // Caches
+        let phoneticCache = JSON.parse(localStorage.getItem("phoneticCache")) || {};
+        let translationCache = JSON.parse(localStorage.getItem("translationCache")) || {};
+        let genderCache = JSON.parse(localStorage.getItem("genderCache")) || {};
+        let enToFrCache = JSON.parse(localStorage.getItem("enToFrCache")) || {};
+        let wordTypeCache = JSON.parse(localStorage.getItem("wordTypeCache")) || {};
+
+        // Données utilisateur
+        let userData = JSON.parse(localStorage.getItem("userData")) || {
+            level: 1,
+            xp: 0,
+            xpToNextLevel: 100,
+            wordsLearned: 0,
+            wordsMastered: 0,
+            todayLearned: 0,
+            streak: 0,
+            lastLogin: new Date().toDateString()
+        };
+
+        // Variables temporaires
+        let currentDeleteTarget = { id: "", type: "" };
+        let currentEditCategory = null;
+        let currentEditFolder = null;
+        let commentEditingWord = null;
+        let inputMode = "fr-to-en";
+        let collapsedCategories = {};
+        let folderDimensions = JSON.parse(localStorage.getItem("folderDimensions")) || {};
+
+        function debugCategoriesAndFolders() {
+            console.log("--- DÉBOGAGE DES CATÉGORIES ET DOSSIERS ---");
+            console.log("Catégories:", categories);
+            console.log("Dossiers:", folders);
+            console.log("Nombre de catégories:", categories.length);
+            console.log("Nombre de dossiers:", folders.length);
+
+            // Vérifier s'il y a des catégories racines
+            const rootCategories = categories.filter(category => !category.parentId);
+            console.log("Catégories racines:", rootCategories);
+
+            // Vérifier les dossiers par catégorie
+            categories.forEach(category => {
+                const categoryFolders = folders.filter(folder => folder.categoryId === category.id);
+                console.log(`Dossiers dans la catégorie "${category.name}" (${category.id}):`, categoryFolders);
+            });
+        }
+
+        // Migration des données existantes si nécessaire
+        function migrateDataIfNeeded() {
+            // Vérifier si la migration a déjà été effectuée
+            if (localStorage.getItem("dataMigrated") === "true") {
+                console.log("Les données ont déjà été migrées.");
+                return;
+            }
+
+            console.log("Migration des données vers la nouvelle structure...");
+
+            // Récupérer les anciennes données
+            const oldFolders = JSON.parse(localStorage.getItem("folders")) || [];
+            const oldWords = JSON.parse(localStorage.getItem("words")) || [];
+
+            console.log("Anciens dossiers:", oldFolders);
+            console.log("Anciens mots:", oldWords);
+
+            // Créer une catégorie racine par défaut si aucune n'existe
+            if (categories.length === 0) {
+                const defaultCategory = {
+                    id: "default",
+                    name: "默认类别",
+                    parentId: null,
+                    order: 0
+                };
+                categories.push(defaultCategory);
+                console.log("Catégorie par défaut créée:", defaultCategory);
+            }
+
+            // Migrer les dossiers
+            const migratedFolders = oldFolders.map((folderName, index) => {
+                const newFolder = {
+                    id: `folder_${index}`,
+                    name: folderName,
+                    categoryId: "default",
+                    order: index
+                };
+                console.log(`Dossier migré: "${folderName}" -> `, newFolder);
+                return newFolder;
+            });
+
+            // Migrer les mots
+            const folderIdMap = {};
+            oldFolders.forEach((folderName, index) => {
+                folderIdMap[folderName] = `folder_${index}`;
+            });
+
+            const migratedWords = oldWords.map(word => {
+                const newWord = {
+                    ...word,
+                    id: word.id || generateId('word'),
+                    folderId: folderIdMap[word.folder] || null,
+                    folder: undefined // Supprimer la propriété folder désuète
+                };
+                console.log(`Mot migré: "${word.word}" -> `, newWord);
+                return newWord;
+            });
+
+            // Sauvegarder les données migrées
+            folders = migratedFolders;
+            words = migratedWords;
+
+            localStorage.setItem("categories", JSON.stringify(categories));
+            localStorage.setItem("folders", JSON.stringify(folders));
+            localStorage.setItem("words", JSON.stringify(words));
+            localStorage.setItem("dataMigrated", "true");
+
+            console.log("Migration des données terminée!");
+        }
+
+        // Initialisation
+        function initFixed() {
+            console.log("Initialisation de l'application...");
+
+            // Forcer la migration si nécessaire
+            if (localStorage.getItem("dataMigrated") !== "true" || categories.length === 0 || folders.length === 0) {
+                console.log("Migration forcée des données...");
+                localStorage.removeItem("dataMigrated");
+                migrateDataIfNeeded();
+            }
+
+            updateUserStats();
+            debugCategoriesAndFolders();
+            renderCategories();
+
+            // Activer le drag-and-drop pour les catégories
+            enableCategoryDragAndDrop();
+
+            console.log("Initialisation terminée.");
+        }
+
+        // Mise à jour des statistiques utilisateur
+        function updateUserStats() {
+            document.querySelector('.level-badge').textContent = userData.level;
+            document.querySelector('.xp-bar').style.width = `${(userData.xp / userData.xpToNextLevel) * 100}%`;
+
+            const statValues = document.querySelectorAll('.stat-value');
+            statValues[0].textContent = userData.wordsLearned || 0;
+            statValues[1].textContent = userData.wordsMastered || 0;
+            statValues[2].textContent = userData.todayLearned || 0;
+
+            // Vérifier si c'est un nouveau jour
+            const today = new Date().toDateString();
+            if (userData.lastLogin !== today) {
+                userData.lastLogin = today;
+                userData.todayLearned = 0;
+                userData.streak++;
+                localStorage.setItem("userData", JSON.stringify(userData));
+            }
+        }
+
+        // Générer un ID unique
+        function generateId(prefix = 'id') {
+            return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+        }
+
+        // Fonction pour obtenir une couleur basée sur le niveau
+        function getLevelColor(level) {
+            const colors = {
+                0: "#9e7bb5", // Niveau racine - violet
+                1: "#5fb6ce", // Premier niveau - bleu
+                2: "#f7ada3", // Deuxième niveau - saumon
+                3: "#a3b75e"  // Troisième niveau - vert
+            };
+            return colors[level] || "#888888";
+        }
+
+        // Rendre les catégories de façon récursive
+        function renderCategories() {
+            const board = document.getElementById("board");
+            board.innerHTML = "";
+
+            // Filtrer les catégories de niveau racine (parentId = null)
+            const rootCategories = categories.filter(category => !category.parentId);
+
+            if (rootCategories.length === 0) {
+                board.innerHTML = "<p style='text-align: center; padding: 20px;'>没有类别。请创建一个根类别开始使用。</p>";
+                return;
+            }
+
+            // Trier par ordre si disponible
+            rootCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            // Rendre chaque catégorie racine
+            rootCategories.forEach(category => {
+                const categoryElement = createCategoryElement(category, 0);
+                board.appendChild(categoryElement);
+            });
+        }
+
+        // Créer un élément de catégorie et ses sous-éléments récursivement
+        function createCategoryElement(category, level) {
+            const container = document.createElement("div");
+            container.className = "category-container";
+            container.id = `category-${category.id}`;
+            container.dataset.categoryId = category.id;
+
+            if (collapsedCategories[category.id]) {
+                container.classList.add("category-collapsed");
+            }
+
+            // En-tête de la catégorie
+            const header = document.createElement("div");
+            header.className = "category-header";
+            header.style.background = getLevelGradient(level);
+            header.innerHTML = `
+        <div class="category-title">
+            <i class="fas fa-grip-lines drag-handle category-drag-handle"></i>
+            <i class="fas fa-chevron-down category-toggle"></i>
+            ${category.name}
+        </div>
+        <div class="category-actions">
+            <button class="category-btn" onclick="showAddFolderModal('${category.id}')" title="添加文件夹">
+                <i class="fas fa-plus"></i>
+            </button>
+            <button class="category-btn" onclick="showAddCategoryModal('${category.id}')">
+                <i class="fas fa-folder-plus"></i>
+            </button>
+            <button class="category-btn" onclick="showEditCategoryModal('${category.id}')">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="category-btn" onclick="showDeleteModal('category', '${category.id}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+
+            // Ajout d'un écouteur d'événements pour fermer/ouvrir en cliquant sur l'en-tête
+            header.addEventListener('click', (e) => {
+                // Vérifier que le clic n'est pas sur les boutons d'action
+                if (!e.target.closest('.category-actions') && !e.target.closest('.category-btn')) {
+                    toggleCategory(category.id);
+                }
+            });
+
+            container.appendChild(header);
+
+            // Le reste du code reste identique...
+            const content = document.createElement("div");
+            content.className = "category-content";
+            container.appendChild(content);
+
+            // Sous-catégories
+            const childCategories = categories.filter(c => c.parentId === category.id);
+            if (childCategories.length > 0) {
+                const subcategoriesContainer = document.createElement("div");
+                subcategoriesContainer.className = "subcategories-container";
+
+                // Trier les sous-catégories
+                childCategories.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                childCategories.forEach(childCategory => {
+                    const childElement = createCategoryElement(childCategory, level + 1);
+                    childElement.classList.add("subcategory-container");
+                    subcategoriesContainer.appendChild(childElement);
+                });
+
+                content.appendChild(subcategoriesContainer);
+
+                // Activer le drag-and-drop pour les sous-catégories
+                new Sortable(subcategoriesContainer, {
+                    group: "categories",
+                    animation: 150,
+                    handle: ".category-drag-handle",
+                    ghostClass: "drag-placeholder",
+                    onEnd: updateCategoryOrder
+                });
+            }
+
+            // Dossiers dans cette catégorie
+            const categoryFolders = folders.filter(folder => folder.categoryId === category.id);
+            if (categoryFolders.length > 0 || level < 3) { // Montrer les conteneurs de dossiers seulement jusqu'au niveau 3
+                const foldersContainer = document.createElement("div");
+                foldersContainer.className = "folders-container";
+                foldersContainer.dataset.categoryId = category.id;
+
+                // Trier les dossiers
+                categoryFolders.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                categoryFolders.forEach(folder => {
+                    const folderElement = createFolderElement(folder);
+                    foldersContainer.appendChild(folderElement);
+                });
+
+                content.appendChild(foldersContainer);
+
+                // Activer le drag-and-drop pour les dossiers
+                new Sortable(foldersContainer, {
+                    group: "folders",
+                    animation: 150,
+                    ghostClass: "drag-placeholder",
+                    onEnd: updateFolderOrder
+                });
+            }
+
+            // Si aucun dossier, afficher un message
+            if (categoryFolders.length === 0 && childCategories.length === 0) {
+                const emptyMessage = document.createElement("p");
+                emptyMessage.style.textAlign = "center";
+                emptyMessage.style.padding = "15px";
+                emptyMessage.style.color = "#888";
+                emptyMessage.textContent = "此类别为空。添加一个文件夹或子类别。";
+                content.appendChild(emptyMessage);
+            }
+
+            return container;
+        }
+
+        // Obtenir un dégradé de couleur basé sur le niveau
+        function getLevelGradient(level) {
+            const colors = {
+                0: "linear-gradient(135deg, #c091ae 0%, #AC819A 100%)", // Violet
+                1: "linear-gradient(135deg, #5fb6ce 0%, #4a9fba 100%)", // Bleu
+                2: "linear-gradient(135deg, #f7ada3 0%, #f8938b 100%)", // Saumon
+                3: "linear-gradient(135deg, #a3b75e 0%, #95a754 100%)"  // Vert
+            };
+            return colors[level] || "linear-gradient(135deg, #888888 0%, #666666 100%)";
+        }
+
+        // Créer un élément de dossier
+        function createFolderElement(folder) {
+            const container = document.createElement("div");
+            container.className = "folder-container";
+            container.id = `folder-${folder.id}`;
+            container.dataset.folderId = folder.id;
+
+            if (folderDimensions[folder.id] && folderDimensions[folder.id].collapsed) {
+                container.classList.add("folder-collapsed");
+            }
+
+            // En-tête du dossier
+            const header = document.createElement("div");
+            header.className = "folder-header";
+            header.innerHTML = `
+        <div class="folder-title">
+            <i class="fas fa-chevron-down folder-toggle"></i>
+            ${folder.name}
+        </div>
+        <div class="folder-actions">
+            <button class="folder-btn" onclick="showEditFolderModal('${folder.id}')">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="folder-btn" onclick="showDeleteModal('folder', '${folder.id}')">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+
+            // Ajout d'un écouteur d'événements pour fermer/ouvrir en cliquant sur l'en-tête
+            header.addEventListener('click', (e) => {
+                // Vérifier que le clic n'est pas sur les boutons d'action
+                if (!e.target.closest('.folder-actions') && !e.target.closest('.folder-btn')) {
+                    toggleFolder(folder.id);
+                }
+            });
+
+            container.appendChild(header);
+
+            // Le reste du code reste identique...
+            const content = document.createElement("div");
+            content.className = "folder-content";
+
+            // Liste de mots
+            content.innerHTML = `
+        <div class="word-list" id="wordList-${folder.id}" data-folder-id="${folder.id}"></div>
+        <div class="add-word-container">
+            <input type="text" class="add-word-input" placeholder="添加新单词" id="input-${folder.id}">
+            <button class="add-word-btn" onclick="addWordFromInput('${folder.id}')">
+                添加 <i class="fas fa-plus"></i>
+            </button>
+        </div>
+    `;
+
+            container.appendChild(content);
+
+            // Ajouter des écouteurs d'événements pour l'entrée de mots
+            setTimeout(() => {
+                const input = document.getElementById(`input-${folder.id}`);
+                if (input) {
+                    input.addEventListener("keypress", (e) => {
+                        if (e.key === "Enter") {
+                            addWordFromInput(folder.id);
+                        }
+                    });
+                }
+
+                // Charger les mots
+                loadWordsInFolder(folder.id);
+
+                // Activer le drag-and-drop pour les mots
+                const wordList = document.getElementById(`wordList-${folder.id}`);
+                if (wordList) {
+                    new Sortable(wordList, {
+                        group: "words",
+                        animation: 150,
+                        ghostClass: "drag-placeholder",
+                        onEnd: updateWordOrder
+                    });
+                }
+            }, 0);
+
+            return container;
+        }
+
+        // Charger les mots dans un dossier
+        async function loadWordsInFolder(folderId) {
+            const wordList = document.getElementById(`wordList-${folderId}`);
+            if (!wordList) return;
+
+            // Message de chargement
+            wordList.innerHTML = `<div style="text-align: center; padding: 10px;">加载中...</div>`;
+
+            // Filtrer les mots de ce dossier
+            const folderWords = words.filter(word => word.folderId === folderId);
+
+            if (folderWords.length === 0) {
+                wordList.innerHTML = `<p style="text-align: center; padding: 10px; color: #999;">此文件夹中没有单词</p>`;
+                return;
+            }
+
+            // Trier les mots
+            folderWords.sort((a, b) => (a.order || 0) - (b.order || 0));
+
+            // Vider la liste
+            wordList.innerHTML = "";
+
+            // Rendre chaque mot
+            for (const word of folderWords) {
+                const { translation, gender, phonetic, wordType } = await getTranslationAndPhonetic(word.word);
+
+                const wordItem = document.createElement("div");
+                wordItem.className = "word-item";
+                wordItem.dataset.word = word.word;
+                wordItem.dataset.wordId = word.id || generateId('word');
+                wordItem.dataset.mastery = word.mastery || 0;
+
+                // Si le mot n'a pas d'ID, lui en attribuer un
+                if (!word.id) {
+                    word.id = wordItem.dataset.wordId;
+                    // Mettre à jour dans la liste
+                    words = words.map(w => w.word === word.word && w.folderId === folderId ? word : w);
+                    localStorage.setItem("words", JSON.stringify(words));
+                }
+
+                const hasComment = word.comment && word.comment.trim() !== "";
+                const commentText = hasComment ? word.comment : "添加评论...";
+                const commentClass = hasComment ? "comment-text" : "comment-placeholder";
+
+                wordItem.innerHTML = `
+                    <i class="fas fa-trash delete-button" onclick="showDeleteModal('word', '${word.id}')"></i>
+                    <div class="mastery-stars">
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                        <i class="fas fa-star star"></i>
+                    </div>
+                    <div class="word-text">
+                        ${word.word} 
+                        <span class="gender">(${gender})</span>
+                        <span class="word-type">${wordType}</span>
+                    </div>
+                    <div class="phonetic">${phonetic}</div>
+                    <div class="chinese">${translation}</div>
+                    <i class="fas fa-play play-button" title="播放发音" onclick="playWord('${word.word}')"></i>
+                    <div class="comment">
+                        <div class="${commentClass}" onclick="showCommentEditor('${word.id}')">${commentText}</div>
+                        <button class="comment-edit-btn" title="编辑评论" onclick="showCommentEditor('${word.id}')">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                `;
+
+                wordList.appendChild(wordItem);
+
+                // Mettre à jour les étoiles de maîtrise
+                updateMasteryStars(wordItem, word.mastery || 0);
+            }
+        }
+
+        // Mettre à jour les étoiles de maîtrise
+        function updateMasteryStars(wordItem, mastery) {
+            const stars = wordItem.querySelectorAll('.star');
+            stars.forEach((star, i) => {
+                star.classList.toggle('active', i < mastery);
+            });
+        }
+
+        // Activer le drag-and-drop pour les catégories
+        function enableCategoryDragAndDrop() {
+            const board = document.getElementById("board");
+            new Sortable(board, {
+                group: "categories",
+                animation: 150,
+                handle: ".category-drag-handle",
+                ghostClass: "drag-placeholder",
+                onEnd: updateCategoryOrder
+            });
+        }
+
+        // Mettre à jour l'ordre des catégories après drag-and-drop
+        function updateCategoryOrder(evt) {
+            const { from, to, oldIndex, newIndex, item } = evt;
+
+            const categoryId = item.dataset.categoryId;
+            if (!categoryId) return;
+
+            // Obtenir le parent ID (conteneur destination)
+            let parentId = null;
+            if (to.parentElement.classList.contains('subcategories-container')) {
+                // Si déplacé dans un conteneur de sous-catégories
+                const parentContainer = to.closest('.category-container');
+                if (parentContainer) {
+                    parentId = parentContainer.dataset.categoryId;
+                }
+            }
+
+            // Mettre à jour le parent ID dans la catégorie
+            categories = categories.map(category => {
+                if (category.id === categoryId) {
+                    return { ...category, parentId, order: newIndex };
+                }
+                return category;
+            });
+
+            // Mettre à jour l'ordre des autres catégories dans le même conteneur
+            const siblingCategories = Array.from(to.children).map((child, index) => ({
+                id: child.dataset.categoryId,
+                order: index
+            }));
+
+            categories = categories.map(category => {
+                const sibling = siblingCategories.find(s => s.id === category.id);
+                if (sibling) {
+                    return { ...category, order: sibling.order };
+                }
+                return category;
+            });
+
+            localStorage.setItem("categories", JSON.stringify(categories));
+
+            // Recharger l'affichage
+            renderCategories();
+        }
+
+        // Mettre à jour l'ordre des dossiers après drag-and-drop
+        function updateFolderOrder(evt) {
+            const { from, to, oldIndex, newIndex, item } = evt;
+
+            const folderId = item.dataset.folderId;
+            if (!folderId) return;
+
+            // Obtenir la catégorie de destination
+            const categoryId = to.dataset.categoryId;
+            if (!categoryId) return;
+
+            // Mettre à jour la catégorie du dossier
+            folders = folders.map(folder => {
+                if (folder.id === folderId) {
+                    return { ...folder, categoryId, order: newIndex };
+                }
+                return folder;
+            });
+
+            // Mettre à jour l'ordre des autres dossiers dans la même catégorie
+            const siblingFolders = Array.from(to.children).map((child, index) => ({
+                id: child.dataset.folderId,
+                order: index
+            }));
+
+            folders = folders.map(folder => {
+                const sibling = siblingFolders.find(s => s.id === folder.id);
+                if (sibling) {
+                    return { ...folder, order: sibling.order };
+                }
+                return folder;
+            });
+
+            localStorage.setItem("folders", JSON.stringify(folders));
+        }
+
+        // Mettre à jour l'ordre des mots après drag-and-drop
+        function updateWordOrder(evt) {
+            const { from, to, oldIndex, newIndex, item } = evt;
+
+            const wordId = item.dataset.wordId;
+            if (!wordId) return;
+
+            // Obtenir le dossier de destination
+            const folderId = to.dataset.folderId;
+            if (!folderId) return;
+
+            // Mettre à jour le dossier du mot
+            words = words.map(word => {
+                if (word.id === wordId) {
+                    return { ...word, folderId, order: newIndex };
+                }
+                return word;
+            });
+
+            // Mettre à jour l'ordre des autres mots dans le même dossier
+            const siblingWords = Array.from(to.children).map((child, index) => ({
+                id: child.dataset.wordId,
+                order: index
+            }));
+
+            words = words.map(word => {
+                const sibling = siblingWords.find(s => s.id === word.id);
+                if (sibling) {
+                    return { ...word, order: sibling.order };
+                }
+                return word;
+            });
+
+            localStorage.setItem("words", JSON.stringify(words));
+        }
+
+        // Fonction pour la traduction et les données phonétiques
+        async function getTranslationAndPhonetic(word) {
+            if (translationCache[word] && phoneticCache[word]) {
+                const wordType = wordTypeCache[word] || determineWordType(word);
+                if (!wordTypeCache[word]) {
+                    wordTypeCache[word] = wordType;
+                    localStorage.setItem("wordTypeCache", JSON.stringify(wordTypeCache));
+                }
+
+                return {
+                    translation: translationCache[word],
+                    gender: genderCache[word],
+                    phonetic: phoneticCache[word],
+                    wordType: wordType
+                };
+            }
+
+            let translation = "Erreur de traduction";
+            let gender = determineGender(word);
+            let phonetic = determinePhonetic(word);
+            let wordType = wordTypeCache[word] || determineWordType(word);
+
+            try {
+                const translationUrl = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=fr&tl=en&dt=t&q=${encodeURIComponent(word)}`;
+                const translationResponse = await fetch(translationUrl);
+                const translationText = await translationResponse.text();
+                const translationData = JSON.parse(translationText);
+
+                if (translationData && translationData[0] && translationData[0][0] && translationData[0][0][0]) {
+                    translation = translationData[0][0][0];
+                }
+            } catch (error) {
+                console.error("Erreur lors de la récupération de la traduction:", error);
+            }
+
+            // Mettre en cache
+            translationCache[word] = translation;
+            genderCache[word] = gender;
+            phoneticCache[word] = phonetic;
+            wordTypeCache[word] = wordType;
+
+            localStorage.setItem("translationCache", JSON.stringify(translationCache));
+            localStorage.setItem("genderCache", JSON.stringify(genderCache));
+            localStorage.setItem("phoneticCache", JSON.stringify(phoneticCache));
+            localStorage.setItem("wordTypeCache", JSON.stringify(wordTypeCache));
+
+            return { translation, gender, phonetic, wordType };
+        }
+
+        // Déterminer le genre
+        function determineGender(word) {
+            const lastChar = word.slice(-1).toLowerCase();
+            const lastTwoChars = word.slice(-2).toLowerCase();
+            const lastThreeChars = word.slice(-3).toLowerCase();
+            const lastFourChars = word.slice(-4).toLowerCase();
+
+            if (['e', 'ion', 'tion', 'sion', 'aison', 'ance', 'ence', 'ude', 'ade', 'ice', 'ure'].some(ending =>
+                lastChar === ending ||
+                lastTwoChars === ending ||
+                lastThreeChars === ending ||
+                lastFourChars === ending)) {
+                return 'f.';
+            }
+            return 'm.';
+        }
+
+        // Déterminer la phonétique
+        function determinePhonetic(word) {
+            let phonetic = '';
+            for (let i = 0; i < word.length; i++) {
+                const char = word[i].toLowerCase();
+                switch (char) {
+                    case 'a': phonetic += 'a'; break;
+                    case 'e': phonetic += (i === word.length - 1) ? 'ə' : 'e'; break;
+                    case 'i': phonetic += 'i'; break;
+                    case 'o': phonetic += 'o'; break;
+                    case 'u': phonetic += 'y'; break;
+                    case 'é': phonetic += 'e'; break;
+                    case 'è':
+                    case 'ê': phonetic += 'ɛ'; break;
+                    case 'c': phonetic += (word[i + 1] && ['e', 'i'].includes(word[i + 1])) ? 's' : 'k'; break;
+                    case 'g': phonetic += (word[i + 1] && ['e', 'i'].includes(word[i + 1])) ? 'ʒ' : 'g'; break;
+                    default: phonetic += char;
+                }
+            }
+            return `/${phonetic}/`;
+        }
+
+        // Déterminer le type de mot
+        function determineWordType(word) {
+            word = word.toLowerCase();
+
+            // Détection des verbes (infinitif)
+            if (word.endsWith('er') || word.endsWith('ir') || word.endsWith('re')) {
+                const nonVerbEndings = ['ier', 'yer', 'tier', 'oir', 'oire', 'aire'];
+                if (!nonVerbEndings.some(ending => word.endsWith(ending)) ||
+                    (word.length > 4 && word.indexOf(' ') === -1)) {
+                    return 'v.';
+                }
+            }
+
+            // Détection des adverbes
+            if (word.endsWith('ment') && word.length > 6) {
+                return 'adv.';
+            }
+
+            // Détection des adjectifs
+            if ((word.endsWith('eux') || word.endsWith('euse') ||
+                word.endsWith('if') || word.endsWith('ive') ||
+                word.endsWith('al') || word.endsWith('ale') ||
+                word.endsWith('iel') || word.endsWith('ielle') ||
+                word.endsWith('ique') || word.endsWith('able') ||
+                word.endsWith('ible')) && word.length > 3) {
+                return 'adj.';
+            }
+
+            // Liste de prépositions communes
+            const prepositions = ['à', 'au', 'aux', 'avec', 'chez', 'contre', 'dans', 'de', 'depuis',
+                'derrière', 'devant', 'en', 'entre', 'envers', 'hormis', 'hors',
+                'jusque', 'malgré', 'par', 'parmi', 'pendant', 'pour', 'près',
+                'sans', 'sauf', 'selon', 'sous', 'suivant', 'sur', 'vers'];
+            if (prepositions.includes(word)) {
+                return 'prép.';
+            }
+
+            // Liste d'articles
+            const articles = ['le', 'la', 'les', 'un', 'une', 'des', 'du', 'au', 'aux'];
+            if (articles.includes(word)) {
+                return 'art.';
+            }
+
+            // Liste de conjonctions communes
+            const conjunctions = ['et', 'ou', 'mais', 'donc', 'car', 'ni', 'or', 'que', 'quand',
+                'comme', 'si', 'lorsque', 'puisque', 'quoique', 'soit'];
+            if (conjunctions.includes(word)) {
+                return 'conj.';
+            }
+
+            // Liste de pronoms communs
+            const pronouns = ['je', 'tu', 'il', 'elle', 'on', 'nous', 'vous', 'ils', 'elles',
+                'me', 'te', 'se', 'lui', 'leur', 'moi', 'toi', 'soi', 'eux',
+                'qui', 'que', 'quoi', 'dont', 'où', 'lequel', 'duquel', 'auquel'];
+            if (pronouns.includes(word)) {
+                return 'pron.';
+            }
+
+            return 'n.';
+        }
+
+        // Traduction de l'anglais vers le français
+        async function getChineseToFrench(englishWord) {
+            if (enToFrCache[englishWord]) {
+                return enToFrCache[englishWord];
+            }
+
+            try {
+                const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=en&tl=fr&dt=t&q=${encodeURIComponent(englishWord)}`;
+                const response = await fetch(url);
+                const text = await response.text();
+                const data = JSON.parse(text);
+
+                let translation = "";
+                if (data && data[0] && data[0][0] && data[0][0][0]) {
+                    translation = data[0][0][0].toLowerCase();
+                    enToFrCache[englishWord] = translation;
+                    localStorage.setItem("enToFrCache", JSON.stringify(enToFrCache));
+                    translationCache[translation] = englishWord;
+                    localStorage.setItem("translationCache", JSON.stringify(translationCache));
+                }
+
+                return translation;
+            } catch (error) {
+                console.error("Error getting translation:", error);
+                return "";
+            }
+        }
+
+        // Ajouter un mot depuis l'entrée
+        function addWordFromInput(folderId) {
+            const input = document.getElementById(`input-${folderId}`);
+            if (!input || !input.value.trim()) return;
+
+            addWord(input.value.trim(), folderId);
+            input.value = '';
+        }
+
+        // Ajouter un mot
+        async function addWord(wordText, folderId) {
+            // Vérifier si le dossier existe
+            const folder = folders.find(f => f.id === folderId);
+            if (!folder) {
+                showNotification('错误', '文件夹不存在', 'exclamation-triangle');
+                return;
+            }
+
+            let wordToAdd;
+
+            if (inputMode === "en-to-fr") {
+                // Mode anglais vers français
+                const frenchWord = await getChineseToFrench(wordText);
+                if (!frenchWord || frenchWord === wordText) {
+                    showNotification('错误', '翻译失败', 'exclamation-triangle');
+                    return;
+                }
+                wordToAdd = frenchWord.toLowerCase();
+            } else {
+                // Mode français vers anglais
+                wordToAdd = wordText.toLowerCase();
+            }
+
+            // Vérifier si le mot existe déjà dans ce dossier
+            if (words.some(w => w.word === wordToAdd && w.folderId === folderId)) {
+                showNotification('错误', '此文件夹中已存在该单词', 'exclamation-triangle');
+                return;
+            }
+
+            // Compter les mots dans ce dossier pour l'ordre
+            const folderWordCount = words.filter(w => w.folderId === folderId).length;
+
+            // Créer l'objet mot
+            const newWord = {
+                id: generateId('word'),
+                word: wordToAdd,
+                folderId: folderId,
+                dateAdded: new Date().toISOString(),
+                mastery: 0,
+                order: folderWordCount
+            };
+
+            // Ajouter à la liste
+            words.push(newWord);
+            localStorage.setItem("words", JSON.stringify(words));
+
+            // Mettre à jour les statistiques
+            userData.wordsLearned = (userData.wordsLearned || 0) + 1;
+            userData.todayLearned = (userData.todayLearned || 0) + 1;
+            localStorage.setItem("userData", JSON.stringify(userData));
+            updateUserStats();
+
+            // Montrer une notification
+            showNotification('成功', '单词已添加', 'check');
+
+            // Ajouter de l'XP
+            addXP(5);
+
+            // Recharger les mots dans ce dossier
+            loadWordsInFolder(folderId);
+        }
+
+        // Jouer la prononciation d'un mot
+        function playWord(word) {
+            responsiveVoice.speak(word, "French Female");
+            addXP(1); // Petit bonus d'XP pour l'écoute
+        }
+
+        // Fonction pour ajouter de l'XP
+        function addXP(amount) {
+            userData.xp = (userData.xp || 0) + amount;
+            if (userData.xp >= userData.xpToNextLevel) {
+                userData.level++;
+                userData.xp -= userData.xpToNextLevel;
+                userData.xpToNextLevel = Math.floor(userData.xpToNextLevel * 1.5);
+                showNotification('升级!', `您已升至 ${userData.level} 级!`, 'level-up');
+                triggerConfetti();
+            }
+
+            localStorage.setItem("userData", JSON.stringify(userData));
+            updateUserStats();
+        }
+
+        // Déclencher des confettis
+        function triggerConfetti() {
+            confetti({
+                particleCount: 100,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // Afficher une notification
+        function showNotification(title, message, icon = 'info-circle') {
+            const notification = document.getElementById('notification');
+            notification.querySelector('.notification-icon i').className = `fas fa-${icon}`;
+            notification.querySelector('.notification-title').textContent = title;
+            notification.querySelector('.notification-message').textContent = message;
+
+            notification.classList.add('show');
+
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Montrer/Cacher les commentaires
+        function showCommentEditor(wordId) {
+            const word = words.find(w => w.id === wordId);
+            if (!word) return;
+
+            commentEditingWord = wordId;
+
+            const wordItem = document.querySelector(`[data-word-id="${wordId}"]`);
+            if (!wordItem) return;
+
+            const commentDiv = wordItem.querySelector('.comment');
+            const currentComment = word.comment || '';
+
+            commentDiv.innerHTML = `
+                <textarea class="comment-input" placeholder="输入评论...">${currentComment}</textarea>
+                <div class="comment-actions">
+                    <button class="comment-save-btn" onclick="saveComment()">保存</button>
+                    <button class="comment-cancel-btn" onclick="cancelCommentEdit()">取消</button>
+                </div>
+            `;
+
+            const textarea = commentDiv.querySelector('.comment-input');
+            textarea.focus();
+            textarea.setSelectionRange(0, textarea.value.length);
+        }
+
+        // Sauvegarder un commentaire
+        function saveComment() {
+            if (!commentEditingWord) return;
+
+            const wordItem = document.querySelector(`[data-word-id="${commentEditingWord}"]`);
+            if (!wordItem) return;
+
+            const textarea = wordItem.querySelector('.comment-input');
+            const comment = textarea.value.trim();
+
+            // Mettre à jour dans la liste
+            words = words.map(w => {
+                if (w.id === commentEditingWord) {
+                    return { ...w, comment };
+                }
+                return w;
+            });
+
+            localStorage.setItem("words", JSON.stringify(words));
+
+            // Mettre à jour l'affichage
+            const commentDiv = wordItem.querySelector('.comment');
+            const hasComment = comment !== "";
+            const commentText = hasComment ? comment : "添加评论...";
+            const commentClass = hasComment ? "comment-text" : "comment-placeholder";
+
+            commentDiv.innerHTML = `
+                <div class="${commentClass}" onclick="showCommentEditor('${commentEditingWord}')">${commentText}</div>
+                <button class="comment-edit-btn" title="编辑评论" onclick="showCommentEditor('${commentEditingWord}')">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+            `;
+
+            commentEditingWord = null;
+
+            // Petit bonus d'XP
+            if (hasComment) addXP(2);
+        }
+
+        // Annuler l'édition d'un commentaire
+        function cancelCommentEdit() {
+            if (!commentEditingWord) return;
+
+            const word = words.find(w => w.id === commentEditingWord);
+            if (!word) return;
+
+            const wordItem = document.querySelector(`[data-word-id="${commentEditingWord}"]`);
+            if (!wordItem) return;
+
+            const commentDiv = wordItem.querySelector('.comment');
+            const hasComment = word.comment && word.comment.trim() !== "";
+            const commentText = hasComment ? word.comment : "添加评论...";
+            const commentClass = hasComment ? "comment-text" : "comment-placeholder";
+
+            commentDiv.innerHTML = `
+                <div class="${commentClass}" onclick="showCommentEditor('${commentEditingWord}')">${commentText}</div>
+                <button class="comment-edit-btn" title="编辑评论" onclick="showCommentEditor('${commentEditingWord}')">
+                    <i class="fas fa-pencil-alt"></i>
+                </button>
+            `;
+
+            commentEditingWord = null;
+        }
+
+        // Ouvrir/Fermer une catégorie
+        function toggleCategory(categoryId) {
+            const container = document.getElementById(`category-${categoryId}`);
+            if (!container) return;
+
+            container.classList.toggle('category-collapsed');
+            collapsedCategories[categoryId] = container.classList.contains('category-collapsed');
+        }
+
+        // Ouvrir/Fermer un dossier
+        function toggleFolder(folderId) {
+            const container = document.getElementById(`folder-${folderId}`);
+            if (!container) return;
+
+            container.classList.toggle('folder-collapsed');
+
+            // Sauvegarder l'état
+            if (!folderDimensions[folderId]) folderDimensions[folderId] = {};
+            folderDimensions[folderId].collapsed = container.classList.contains('folder-collapsed');
+            localStorage.setItem("folderDimensions", JSON.stringify(folderDimensions));
+        }
+
+        // Afficher le modal pour ajouter une catégorie
+        function showAddCategoryModal(parentId = null) {
+            // Réinitialiser le formulaire
+            document.getElementById('categoryNameInput').value = '';
+
+            // Remplir les options de catégories parentes
+            populateParentCategoryOptions('parentCategorySelect', parentId);
+
+            // Afficher le modal
+            document.getElementById('categoryModal').style.display = 'flex';
+        }
+
+        // Afficher le modal pour éditer une catégorie
+        function showEditCategoryModal(categoryId) {
+            const category = categories.find(c => c.id === categoryId);
+            if (!category) return;
+
+            currentEditCategory = categoryId;
+
+            // Remplir le formulaire
+            document.getElementById('editCategoryNameInput').value = category.name;
+
+            // Remplir les options de catégories parentes (en excluant cette catégorie et ses descendants)
+            populateParentCategoryOptions('editParentCategorySelect', category.parentId, categoryId);
+
+            // Afficher le modal
+            document.getElementById('editCategoryModal').style.display = 'flex';
+        }
+
+        // Remplir les options de catégories parentes
+        function populateParentCategoryOptions(selectId, selectedId = null, excludeId = null) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+
+            // Vider les options existantes sauf la première
+            select.innerHTML = '<option value="">根类别 (无父类别)</option>';
+
+            // Fonction pour obtenir tous les descendants d'une catégorie
+            function getDescendants(catId) {
+                const descendants = [];
+
+                function addChildren(parentId) {
+                    const children = categories.filter(c => c.parentId === parentId);
+                    children.forEach(child => {
+                        descendants.push(child.id);
+                        addChildren(child.id);
+                    });
+                }
+
+                addChildren(catId);
+                return descendants;
+            }
+
+            // Obtenir les catégories à exclure (la catégorie elle-même et ses descendants)
+            const excludeIds = excludeId ? [excludeId, ...getDescendants(excludeId)] : [];
+
+            // Fonction récursive pour ajouter les options avec indentation
+            function addCategoryOptions(parentId = null, level = 0) {
+                // Filtrer et trier les catégories enfants
+                const childCategories = categories
+                    .filter(c => c.parentId === parentId && !excludeIds.includes(c.id))
+                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                childCategories.forEach(category => {
+                    // Créer l'option avec indentation
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = '  '.repeat(level) + '└ ' + category.name;
+                    option.selected = category.id === selectedId;
+                    select.appendChild(option);
+
+                    // Ajouter récursivement les enfants
+                    addCategoryOptions(category.id, level + 1);
+                });
+            }
+
+            // Ajouter toutes les options
+            addCategoryOptions();
+        }
+
+        // Ajouter une catégorie
+        function addCategory() {
+            const name = document.getElementById('categoryNameInput').value.trim();
+            if (!name) return;
+
+            const parentId = document.getElementById('parentCategorySelect').value || null;
+
+            // Compter les catégories de même niveau pour l'ordre
+            const siblingCount = categories.filter(c => c.parentId === parentId).length;
+
+            // Créer la catégorie
+            const newCategory = {
+                id: generateId('category'),
+                name,
+                parentId,
+                order: siblingCount
+            };
+
+            categories.push(newCategory);
+            localStorage.setItem("categories", JSON.stringify(categories));
+
+            // Fermer le modal
+            document.getElementById('categoryModal').style.display = 'none';
+
+            // Rafraîchir l'affichage
+            renderCategories();
+
+            // Notification et XP
+            showNotification('成功', '类别已创建', 'check');
+            addXP(10);
+        }
+
+        // Éditer une catégorie
+        function editCategory() {
+            if (!currentEditCategory) return;
+
+            const name = document.getElementById('editCategoryNameInput').value.trim();
+            if (!name) return;
+
+            const parentId = document.getElementById('editParentCategorySelect').value || null;
+
+            // Mettre à jour la catégorie
+            categories = categories.map(category => {
+                if (category.id === currentEditCategory) {
+                    return { ...category, name, parentId };
+                }
+                return category;
+            });
+
+            localStorage.setItem("categories", JSON.stringify(categories));
+
+            // Fermer le modal
+            document.getElementById('editCategoryModal').style.display = 'none';
+            currentEditCategory = null;
+
+            // Rafraîchir l'affichage
+            renderCategories();
+
+            // Notification
+            showNotification('成功', '类别已更新', 'check');
+        }
+
+        // Afficher le modal pour ajouter un dossier
+        function showAddFolderModal(categoryId = null) {
+            // Réinitialiser le formulaire
+            document.getElementById('folderNameInput').value = '';
+
+            // Remplir les options de catégories
+            populateCategoryOptions('folderCategorySelect', categoryId);
+
+            // Si un categoryId est fourni, le sélectionner
+            if (categoryId) {
+                const categorySelect = document.getElementById('folderCategorySelect');
+                categorySelect.value = categoryId;
+            }
+
+            // Afficher le modal
+            document.getElementById('folderModal').style.display = 'flex';
+        }
+
+        // Afficher le modal pour éditer un dossier
+        function showEditFolderModal(folderId) {
+            const folder = folders.find(f => f.id === folderId);
+            if (!folder) return;
+
+            currentEditFolder = folderId;
+
+            // Remplir le formulaire
+            document.getElementById('editFolderNameInput').value = folder.name;
+
+            // Remplir les options de catégories
+            populateCategoryOptions('editFolderCategorySelect', folder.categoryId);
+
+            // Afficher le modal
+            document.getElementById('editFolderModal').style.display = 'flex';
+        }
+
+        // Remplir les options de catégories
+        function populateCategoryOptions(selectId, selectedId = null) {
+            const select = document.getElementById(selectId);
+            if (!select) return;
+
+            // Vider les options existantes
+            select.innerHTML = '<option value="">选择类别</option>';
+
+            // Fonction récursive pour ajouter les options avec indentation
+            function addCategoryOptions(parentId = null, level = 0) {
+                // Filtrer et trier les catégories enfants
+                const childCategories = categories
+                    .filter(c => c.parentId === parentId)
+                    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+                childCategories.forEach(category => {
+                    // Créer l'option avec indentation
+                    const option = document.createElement('option');
+                    option.value = category.id;
+                    option.textContent = '  '.repeat(level) + '└ ' + category.name;
+                    option.selected = category.id === selectedId;
+                    select.appendChild(option);
+
+                    // Ajouter récursivement les enfants
+                    addCategoryOptions(category.id, level + 1);
+                });
+            }
+
+            // Ajouter toutes les options
+            addCategoryOptions();
+        }
+
+        // Ajouter un dossier
+        function addFolder() {
+            const name = document.getElementById('folderNameInput').value.trim();
+            if (!name) return;
+
+            const categoryId = document.getElementById('folderCategorySelect').value;
+            if (!categoryId) {
+                showNotification('错误', '请选择一个类别', 'exclamation-triangle');
+                return;
+            }
+
+            // Compter les dossiers dans cette catégorie pour l'ordre
+            const siblingCount = folders.filter(f => f.categoryId === categoryId).length;
+
+            // Créer le dossier
+            const newFolder = {
+                id: generateId('folder'),
+                name,
+                categoryId,
+                order: siblingCount
+            };
+
+            folders.push(newFolder);
+            localStorage.setItem("folders", JSON.stringify(folders));
+
+            // Fermer le modal
+            document.getElementById('folderModal').style.display = 'none';
+
+            // Rafraîchir l'affichage
+            renderCategories();
+
+            // Notification et XP
+            showNotification('成功', '文件夹已创建', 'check');
+            addXP(5);
+        }
+
+        // Éditer un dossier
+        function editFolder() {
+            if (!currentEditFolder) return;
+
+            const name = document.getElementById('editFolderNameInput').value.trim();
+            if (!name) return;
+
+            const categoryId = document.getElementById('editFolderCategorySelect').value;
+            if (!categoryId) {
+                showNotification('错误', '请选择一个类别', 'exclamation-triangle');
+                return;
+            }
+
+            // Mettre à jour le dossier
+            folders = folders.map(folder => {
+                if (folder.id === currentEditFolder) {
+                    return { ...folder, name, categoryId };
+                }
+                return folder;
+            });
+
+            localStorage.setItem("folders", JSON.stringify(folders));
+
+            // Fermer le modal
+            document.getElementById('editFolderModal').style.display = 'none';
+            currentEditFolder = null;
+
+            // Rafraîchir l'affichage
+            renderCategories();
+
+            // Notification
+            showNotification('成功', '文件夹已更新', 'check');
+        }
+
+        // Afficher le modal de suppression
+        function showDeleteModal(type, id) {
+            currentDeleteTarget = { type, id };
+
+            let confirmText = "您确定要删除这个项目吗？";
+            let item;
+
+            switch (type) {
+                case 'category':
+                    item = categories.find(c => c.id === id);
+                    if (item) confirmText = `您确定要删除类别 "${item.name}" 及其所有内容吗？`;
+                    break;
+                case 'folder':
+                    item = folders.find(f => f.id === id);
+                    if (item) confirmText = `您确定要删除文件夹 "${item.name}" 及其所有单词吗？`;
+                    break;
+                case 'word':
+                    item = words.find(w => w.id === id);
+                    if (item) confirmText = `您确定要删除单词 "${item.word}" 吗？`;
+                    break;
+            }
+
+            document.getElementById('deleteModalText').textContent = confirmText;
+            document.getElementById('deleteModal').style.display = 'flex';
+        }
+
+        // Confirmer la suppression
+        function confirmDelete() {
+            const { type, id } = currentDeleteTarget;
+
+            switch (type) {
+                case 'category':
+                    deleteCategory(id);
+                    break;
+                case 'folder':
+                    deleteFolder(id);
+                    break;
+                case 'word':
+                    deleteWord(id);
+                    break;
+            }
+
+            document.getElementById('deleteModal').style.display = 'none';
+            currentDeleteTarget = { id: "", type: "" };
+        }
+
+        // Supprimer une catégorie
+        function deleteCategory(categoryId) {
+            // Fonction récursive pour obtenir tous les IDs de catégories à supprimer
+            function getCategoryIdsToDelete(parentId) {
+                const ids = [parentId];
+                const childCategories = categories.filter(c => c.parentId === parentId);
+                childCategories.forEach(child => {
+                    ids.push(...getCategoryIdsToDelete(child.id));
+                });
+                return ids;
+            }
+
+            const categoryIdsToDelete = getCategoryIdsToDelete(categoryId);
+
+            // Obtenir les dossiers à supprimer
+            const folderIdsToDelete = folders
+                .filter(f => categoryIdsToDelete.includes(f.categoryId))
+                .map(f => f.id);
+
+            // Obtenir les mots à supprimer
+            const wordsToDelete = words.filter(w => folderIdsToDelete.includes(w.folderId));
+
+            // Mettre à jour les statistiques
+            userData.wordsLearned = Math.max(0, (userData.wordsLearned || 0) - wordsToDelete.length);
+            userData.wordsMastered = Math.max(0, (userData.wordsMastered || 0) - wordsToDelete.filter(w => w.mastery === 5).length);
+            localStorage.setItem("userData", JSON.stringify(userData));
+            updateUserStats();
+
+            // Supprimer les éléments
+            categories = categories.filter(c => !categoryIdsToDelete.includes(c.id));
+            folders = folders.filter(f => !folderIdsToDelete.includes(f.id));
+            words = words.filter(w => !folderIdsToDelete.includes(w.folderId));
+
+            // Sauvegarder
+            localStorage.setItem("categories", JSON.stringify(categories));
+            localStorage.setItem("folders", JSON.stringify(folders));
+            localStorage.setItem("words", JSON.stringify(words));
+
+            // Rafraîchir l'affichage
+            renderCategories();
+
+            // Notification
+            showNotification('成功', '类别已删除', 'check');
+        }
+
+        // Supprimer un dossier
+        function deleteFolder(folderId) {
+            // Obtenir les mots à supprimer
+            const wordsToDelete = words.filter(w => w.folderId === folderId);
+
+            // Mettre à jour les statistiques
+            userData.wordsLearned = Math.max(0, (userData.wordsLearned || 0) - wordsToDelete.length);
+            userData.wordsMastered = Math.max(0, (userData.wordsMastered || 0) - wordsToDelete.filter(w => w.mastery === 5).length);
+            localStorage.setItem("userData", JSON.stringify(userData));
+            updateUserStats();
+
+            // Supprimer les éléments
+            folders = folders.filter(f => f.id !== folderId);
+            words = words.filter(w => w.folderId !== folderId);
+
+            // Sauvegarder
+            localStorage.setItem("folders", JSON.stringify(folders));
+            localStorage.setItem("words", JSON.stringify(words));
+
+            // Rafraîchir l'affichage
+            renderCategories();
+
+            // Notification
+            showNotification('成功', '文件夹已删除', 'check');
+        }
+
+        // Supprimer un mot
+        function deleteWord(wordId) {
+            // Obtenir le mot
+            const word = words.find(w => w.id === wordId);
+            if (!word) return;
+
+            // Mettre à jour les statistiques
+            if (word.mastery === 5) userData.wordsMastered = Math.max(0, (userData.wordsMastered || 0) - 1);
+            userData.wordsLearned = Math.max(0, (userData.wordsLearned || 0) - 1);
+            localStorage.setItem("userData", JSON.stringify(userData));
+            updateUserStats();
+
+            // Supprimer le mot
+            words = words.filter(w => w.id !== wordId);
+            localStorage.setItem("words", JSON.stringify(words));
+
+            // Recharger les mots dans ce dossier
+            loadWordsInFolder(word.folderId);
+
+            // Notification
+            showNotification('成功', '单词已删除', 'check');
+        }
+
+        // Changer le mode de langue
+        function switchInputMode(mode) {
+            inputMode = mode;
+
+            // Mettre à jour les boutons
+            document.getElementById('fr-to-en-btn').classList.toggle('active', mode === 'fr-to-en');
+            document.getElementById('en-to-fr-btn').classList.toggle('active', mode === 'en-to-fr');
+
+            // Mettre à jour les placeholders des champs de saisie
+            const inputs = document.querySelectorAll('.add-word-input');
+            const placeholder = mode === 'fr-to-en' ? '添加新法语单词' : '添加新英语词汇';
+
+            inputs.forEach(input => {
+                input.placeholder = placeholder;
+            });
+        }
+
+        // ====== Event Listeners ======
+
+        function initUserData() {
+            // Vérifier si c'est un nouveau jour
+            const today = new Date().toDateString();
+            if (userData.lastLogin !== today) {
+                userData.lastLogin = today;
+                userData.todayLearned = 0;
+                // Si l'utilisateur revient le jour suivant, maintenir le streak
+                if (new Date(userData.lastLogin).getTime() + 86400000 >= new Date().getTime()) {
+                    userData.streak++;
+                    if (userData.streak === 3 && !userData.badges.streak3) {
+                        userData.badges.streak3 = true;
+                        showNotification('徽章解锁!', '您已经连续学习3天!', 'trophy');
+                        triggerConfetti();
+                    }
+                } else {
+                    userData.streak = 1;
+                }
+            }
+
+            updateStatsDisplay();
+            saveUserData();
+        }
+
+        // Initialisation
+        function attachEventListeners() {
+            // Initialisation
+            window.addEventListener('DOMContentLoaded', () => {
+                console.log("DOMContentLoaded event fired");
+                // Utiliser setTimeout pour s'assurer que tout est chargé
+                setTimeout(initFixed, 100);
+
+                initUserData();
+                //renderBoard();
+
+                setTimeout(() => {
+                    folders.forEach(folder => {
+                        applyFolderDimensions(folder);
+                    });
+                    updateBadgesDisplay();
+                }, 100);
+
+                // Initialiser les badges
+                if (words.length >= 10 && !userData.badges.words10) {
+                    userData.badges.words10 = true;
+                    saveUserData();
+                }
+
+                if (words.length >= 50 && !userData.badges.words50) {
+                    userData.badges.words50 = true;
+                    saveUserData();
+                }
+
+                if (folders.length >= 5 && !userData.badges.folders5) {
+                    userData.badges.folders5 = true;
+                    saveUserData();
+                }
+            });
+
+            // Boutons d'action
+            const addCategoryBtn = document.getElementById('addCategoryBtn');
+            if (addCategoryBtn) addCategoryBtn.addEventListener('click', () => showAddCategoryModal());
+
+            const addRootCategoryBtn = document.getElementById('addRootCategoryBtn');
+            if (addRootCategoryBtn) addRootCategoryBtn.addEventListener('click', () => showAddCategoryModal());
+
+            // Langue
+            const frToEnBtn = document.getElementById('fr-to-en-btn');
+            const enToFrBtn = document.getElementById('en-to-fr-btn');
+            if (frToEnBtn) frToEnBtn.addEventListener('click', () => switchInputMode('fr-to-en'));
+            if (enToFrBtn) enToFrBtn.addEventListener('click', () => switchInputMode('en-to-fr'));
+
+            // Modals - Catégorie
+            const confirmCategoryButton = document.getElementById('confirmCategoryButton');
+            const cancelCategoryButton = document.getElementById('cancelCategoryButton');
+            const confirmEditCategoryButton = document.getElementById('confirmEditCategoryButton');
+            const cancelEditCategoryButton = document.getElementById('cancelEditCategoryButton');
+
+            if (confirmCategoryButton) confirmCategoryButton.addEventListener('click', addCategory);
+            if (cancelCategoryButton) cancelCategoryButton.addEventListener('click', () => {
+                document.getElementById('categoryModal').style.display = 'none';
+            });
+
+            if (confirmEditCategoryButton) confirmEditCategoryButton.addEventListener('click', editCategory);
+            if (cancelEditCategoryButton) cancelEditCategoryButton.addEventListener('click', () => {
+                document.getElementById('editCategoryModal').style.display = 'none';
+                currentEditCategory = null;
+            });
+
+            // Modals - Dossier
+            const confirmFolderButton = document.getElementById('confirmFolderButton');
+            const cancelFolderButton = document.getElementById('cancelFolderButton');
+            const confirmEditFolderButton = document.getElementById('confirmEditFolderButton');
+            const cancelEditFolderButton = document.getElementById('cancelEditFolderButton');
+
+            if (confirmFolderButton) confirmFolderButton.addEventListener('click', () => {
+                const name = document.getElementById('folderNameInput').value.trim();
+                if (!name) return;
+
+                const categoryId = document.getElementById('folderCategorySelect').value;
+                if (!categoryId) {
+                    showNotification('错误', '请选择一个类别', 'exclamation-triangle');
+                    return;
+                }
+
+                // Compter les dossiers dans cette catégorie pour l'ordre
+                const siblingCount = folders.filter(f => f.categoryId === categoryId).length;
+
+                // Créer le dossier
+                const newFolder = {
+                    id: generateId('folder'),
+                    name,
+                    categoryId,
+                    order: siblingCount
+                };
+
+                folders.push(newFolder);
+                localStorage.setItem("folders", JSON.stringify(folders));
+
+                // Fermer le modal
+                document.getElementById('folderModal').style.display = 'none';
+
+                // Rafraîchir l'affichage
+                renderCategories();
+
+                // Notification et XP
+                showNotification('成功', '文件夹已创建', 'check');
+                addXP(5);
+            });
+
+            if (cancelFolderButton) cancelFolderButton.addEventListener('click', () => {
+                // Fermer le modal
+                document.getElementById('folderModal').style.display = 'none';
+            });
+
+            if (confirmEditFolderButton) confirmEditFolderButton.addEventListener('click', () => {
+                if (!currentEditFolder) return;
+
+                const name = document.getElementById('editFolderNameInput').value.trim();
+                if (!name) return;
+
+                const categoryId = document.getElementById('editFolderCategorySelect').value;
+                if (!categoryId) {
+                    showNotification('错误', '请选择一个类别', 'exclamation-triangle');
+                    return;
+                }
+
+                // Mettre à jour le dossier
+                folders = folders.map(folder => {
+                    if (folder.id === currentEditFolder) {
+                        return { ...folder, name, categoryId };
+                    }
+                    return folder;
+                });
+
+                localStorage.setItem("folders", JSON.stringify(folders));
+
+                // Fermer le modal
+                document.getElementById('editFolderModal').style.display = 'none';
+                currentEditFolder = null;
+
+                // Rafraîchir l'affichage
+                renderCategories();
+
+                // Notification
+                showNotification('成功', '文件夹已更新', 'check');
+            });
+
+            if (cancelEditFolderButton) cancelEditFolderButton.addEventListener('click', () => {
+                // Fermer le modal
+                document.getElementById('editFolderModal').style.display = 'none';
+                currentEditFolder = null;
+            });
+
+            // Modal - Suppression
+            const confirmDeleteButton = document.getElementById('confirmDeleteButton');
+            const cancelDeleteButton = document.getElementById('cancelDeleteButton');
+
+            if (confirmDeleteButton) confirmDeleteButton.addEventListener('click', confirmDelete);
+            if (cancelDeleteButton) cancelDeleteButton.addEventListener('click', () => {
+                document.getElementById('deleteModal').style.display = 'none';
+                currentDeleteTarget = { id: "", type: "" };
+            });
+
+            // Badges
+            const badgesBtn = document.getElementById('badgesBtn');
+            if (badgesBtn) badgesBtn.addEventListener('click', showBadges);
+
+            // Événements pour le quiz
+            document.getElementById("startQuizBtn").addEventListener("click", initQuiz);
+            document.getElementById("quizNextBtn").addEventListener("click", () => {
+                const currentIndex = parseInt(localStorage.getItem("quizIndex"));
+                showQuizQuestion(currentIndex + 1);
+            });
+            document.getElementById("quizCloseBtn").addEventListener("click", () => {
+                document.getElementById("quizModal").style.display = "none";
+            });
+
+            // Fermeture des modals en cliquant en dehors
+            window.addEventListener('click', (e) => {
+                if (e.target.classList.contains('modal')) {
+                    e.target.style.display = 'none';
+
+                    // Réinitialiser les variables temporaires
+                    currentEditCategory = null;
+                    currentEditFolder = null;
+                    currentDeleteTarget = { id: "", type: "" };
+                }
+            });
+        }
+
+        function showBadges() {
+            // À implémenter: système de badges
+            showNotification('功能开发中', '徽章功能即将推出', 'award');
+        }
+
+        function resetAllData() {
+            if (confirm("ATTENTION: Cette action va effacer toutes vos données. Êtes-vous sûr de vouloir continuer?")) {
+                localStorage.removeItem("categories");
+                localStorage.removeItem("folders");
+                localStorage.removeItem("words");
+                localStorage.removeItem("dataMigrated");
+                localStorage.removeItem("folderDimensions");
+
+                // Réinitialiser les variables
+                categories = [];
+                folders = [];
+                words = [];
+                folderDimensions = {};
+                collapsedCategories = {};
+
+                // Créer une catégorie par défaut
+                categories.push({
+                    id: "default",
+                    name: "默认类别",
+                    parentId: null,
+                    order: 0
+                });
+
+                // Sauvegarder la catégorie par défaut
+                localStorage.setItem("categories", JSON.stringify(categories));
+
+                // Recharger la page
+                window.location.reload();
+            }
+        }
+
+        // Fonction pour initialiser un quiz
+        function initQuiz() {
+            if (words.length < 4) {
+                showNotification('无法开始测验', '至少需要4个单词', 'warning');
+                return;
+            }
+
+            // Mélanger les mots et en prendre 10 maximum
+            const shuffledWords = [...words].sort(() => 0.5 - Math.random()).slice(0, 10);
+            localStorage.setItem("currentQuiz", JSON.stringify(shuffledWords));
+            localStorage.setItem("quizIndex", "0");
+            localStorage.setItem("quizScore", "0");
+
+            // Initialiser le premier mot
+            showQuizQuestion(0);
+
+            // Afficher le modal
+            document.getElementById("quizModal").style.display = "flex";
+
+            userData.quizzesTaken++;
+            if (userData.quizzesTaken === 10 && !userData.badges.quizzes10) {
+                userData.badges.quizzes10 = true;
+                setTimeout(() => {
+                    showNotification('徽章解锁!', '您已完成10次测验!', 'trophy');
+                }, 1000);
+            }
+            saveUserData();
+            updateBadgesDisplay();
+        }
+
+        // Fonction pour afficher une question de quiz
+        async function showQuizQuestion(index) {
+            const quizWords = JSON.parse(localStorage.getItem("currentQuiz"));
+            if (index >= quizWords.length) {
+                // Fin du quiz
+                const score = parseInt(localStorage.getItem("quizScore"));
+                const message = `您的得分: ${score}/${quizWords.length}`;
+                showNotification('测验完成!', message, 'check');
+                document.getElementById("quizModal").style.display = "none";
+
+                // Ajouter de l'XP basé sur le score
+                addXP(score * 5);
+                return;
+            }
+
+            // Obtenir la traduction du mot
+            const currentWord = quizWords[index].word;
+            const { translation } = await getTranslationAndPhonetic(currentWord);
+
+            // Créer les options (une correcte + trois aléatoires)
+            let options = [translation];
+
+            // Trouver trois autres traductions aléatoires
+            const otherTranslations = [];
+            const allWords = [...words];
+
+            // Mélanger les mots pour les options
+            allWords.sort(() => 0.5 - Math.random());
+
+            for (const word of allWords) {
+                if (word.word !== currentWord) {
+                    const { translation: otherTranslation } = await getTranslationAndPhonetic(word.word);
+                    if (!options.includes(otherTranslation)) {
+                        otherTranslations.push(otherTranslation);
+                        if (otherTranslations.length === 3) break;
+                    }
+                }
+            }
+
+            options = [...options, ...otherTranslations];
+            options = options.sort(() => 0.5 - Math.random());
+
+            // Mettre à jour l'interface
+            document.querySelector('.quiz-word').textContent = currentWord;
+            const optionsContainer = document.querySelector('.quiz-options');
+            optionsContainer.innerHTML = '';
+
+            options.forEach(option => {
+                const optionEl = document.createElement('div');
+                optionEl.className = 'quiz-option';
+                optionEl.textContent = option;
+                optionEl.dataset.value = option;
+                optionEl.onclick = function () { checkQuizAnswer(this, translation); };
+                optionsContainer.appendChild(optionEl);
+            });
+
+            // Cacher le feedback
+            document.querySelector('.quiz-feedback').style.display = 'none';
+
+            // Désactiver le bouton suivant jusqu'à ce qu'une réponse soit donnée
+            document.getElementById('quizNextBtn').disabled = true;
+            document.getElementById('quizNextBtn').style.opacity = 0.5;
+
+            // Sauvegarder l'index actuel
+            localStorage.setItem("quizIndex", index.toString());
+        }
+
+        // Fonction pour vérifier la réponse au quiz
+        function checkQuizAnswer(optionEl, correctAnswer) {
+            // Désactiver les clics sur les options
+            document.querySelectorAll('.quiz-option').forEach(el => {
+                el.onclick = null;
+                el.style.cursor = 'default';
+            });
+
+            const selectedAnswer = optionEl.dataset.value;
+            const isCorrect = selectedAnswer === correctAnswer;
+
+            // Mettre à jour l'apparence des options
+            document.querySelectorAll('.quiz-option').forEach(el => {
+                if (el.dataset.value === correctAnswer) {
+                    el.classList.add('correct');
+                } else if (el === optionEl && !isCorrect) {
+                    el.classList.add('incorrect');
+                }
+            });
+
+            // Afficher le feedback
+            const feedback = document.querySelector('.quiz-feedback');
+            feedback.textContent = isCorrect ? '正确!' : '错误!';
+            feedback.style.color = isCorrect ? '#4caf50' : '#f44336';
+            feedback.style.display = 'block';
+
+            // Si correct, augmenter le score
+            if (isCorrect) {
+                const currentScore = parseInt(localStorage.getItem("quizScore"));
+                localStorage.setItem("quizScore", (currentScore + 1).toString());
+
+                // Augmenter la maîtrise du mot
+                const quizIndex = parseInt(localStorage.getItem("quizIndex"));
+                const quizWords = JSON.parse(localStorage.getItem("currentQuiz"));
+                const wordObj = quizWords[quizIndex];
+
+                increaseMastery(wordObj.word, wordObj.folder);
+            }
+
+            // Activer le bouton suivant
+            document.getElementById('quizNextBtn').disabled = false;
+            document.getElementById('quizNextBtn').style.opacity = 1;
+        }
+
+        // Fonction pour incrémenter la maîtrise d'un mot
+        function increaseMastery(word, folder) {
+            words = words.map(w => {
+                if (w.word === word && w.folder === folder) {
+                    // Si le mot n'a pas de niveau de maîtrise, l'initialiser à 0
+                    let mastery = w.mastery || 0;
+                    // Augmenter la maîtrise (max 5)
+                    mastery = Math.min(mastery + 1, 5);
+
+                    // Vérifier si nous venons d'atteindre la maîtrise complète (5 étoiles)
+                    if (mastery === 5 && (!w.mastery || w.mastery < 5)) {
+                        // Incrémenter le compteur de mots maîtrisés
+                        userData.wordsMastered++;
+                        updateStatsDisplay();
+
+                        // Vérifier le badge de premier mot maîtrisé
+                        if (userData.wordsMastered === 1 && !userData.badges.firstMastery) {
+                            userData.badges.firstMastery = true;
+                            setTimeout(() => {
+                                showNotification('徽章解锁!', '您掌握了第一个单词!', 'trophy');
+                            }, 1000);
+                        }
+
+                        // Vérifier le badge de tous les mots en 5 étoiles
+                        checkAllFiveStarsBadge();
+                    }
+
+                    return { ...w, mastery };
+                }
+                return w;
+            });
+
+            localStorage.setItem("words", JSON.stringify(words));
+
+            // Mettre à jour l'affichage si le mot est visible
+            const wordItem = document.querySelector(`.word-item[data-word="${word}"]`);
+            if (wordItem) {
+                const mastery = words.find(w => w.word === word && w.folder === folder)?.mastery || 0;
+                wordItem.dataset.mastery = mastery;
+                updateMasteryStars(wordItem, mastery);
+            }
+        }
+
+        // Vérifier si tous les mots ont 5 étoiles pour le badge
+        function checkAllFiveStarsBadge() {
+            if (words.length > 0 && words.every(w => w.mastery === 5) && !userData.badges.allFiveStars) {
+                userData.badges.allFiveStars = true;
+                setTimeout(() => {
+                    showNotification('徽章解锁!', '所有单词都达到5星掌握!', 'trophy');
+                    triggerConfetti();
+                }, 1000);
+                saveUserData();
+                updateBadgesDisplay();
+            }
+        }
+
+        // Fonction pour mettre à jour l'affichage des badges
+        function updateBadgesDisplay() {
+            const badgeItems = document.querySelectorAll('.badge-item');
+            let i = 0;
+            for (const badge in userData.badges) {
+                if (userData.badges[badge] && i < badgeItems.length) {
+                    badgeItems[i].classList.add('unlocked');
+                }
+                i++;
+            }
+        }
+
+        // Appeler la fonction d'attachement des écouteurs d'événements
+        attachEventListeners();
+
+        // Exposer les fonctions au contexte global
+        window.showAddCategoryModal = showAddCategoryModal;
+        window.showEditCategoryModal = showEditCategoryModal;
+        window.showAddFolderModal = showAddFolderModal;
+        window.showEditFolderModal = showEditFolderModal;
+        window.showDeleteModal = showDeleteModal;
+        window.toggleCategory = toggleCategory;
+        window.toggleFolder = toggleFolder;
+        window.addWordFromInput = addWordFromInput;
+        window.playWord = playWord;
+        window.showCommentEditor = showCommentEditor;
+        window.saveComment = saveComment;
+        window.cancelCommentEdit = cancelCommentEdit;
+        window.resetAllData = resetAllData;
+        window.initQuiz = initQuiz;
+        window.showQuizQuestion = showQuizQuestion;
+        window.checkQuizAnswer = checkQuizAnswer;
+        window.increaseMastery = increaseMastery;
+        window.updateMasteryStars = updateMasteryStars;
+        window.addXP = addXP;
+        window.showNotification = showNotification;
+        window.triggerConfetti = triggerConfetti;
+    </script>
+</body>
+
+</html>
