@@ -168,9 +168,9 @@
         }
 
         .action-btn.tertiary {
-            background: #c091ae ;
+            background: #c091ae;
             color: white;
-            border-color: #AC819A ;
+            border-color: #AC819A;
         }
 
         /* Categories et sous-catégories */
@@ -1038,7 +1038,7 @@
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
-            margin:5px
+            margin: 5px
         }
 
         .quiz-next {
@@ -1050,58 +1050,134 @@
             background: #c3dfeb;
             color: #333;
         }
+
+        .language-selector {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .language-selector button {
+            background: white;
+            border: 2px solid #edc9b8;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .language-selector button.active {
+            background: #f7ada3;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Styles pour le modal d'export/import */
+        #exportImportModal .modal-content {
+            width: 500px;
+            max-width: 90vw;
+        }
+
+        .export-import-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .export-import-section {
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .export-import-section h4 {
+            margin-top: 0;
+            color: #5a5a5a;
+        }
+
+        .export-area {
+            width: 100%;
+            min-height: 100px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            resize: vertical;
+        }
+
+        .import-instructions {
+            margin-bottom: 10px;
+            font-size: 14px;
+            color: #666;
+        }
     </style>
 </head>
 
 <body>
-    <h1>词汇表</h1>
+
+    <!-- Sélecteur de langue -->
+    <div class="language-selector">
+        <button id="lang-fr" class="active" title="Français">FR</button>
+        <button id="lang-en" title="English">EN</button>
+        <button id="lang-cn" title="中文">CN</button>
+    </div>
+
+    <h1 id="app-title">词汇表</h1>
 
     <!-- Stats bar -->
     <div class="stats-bar">
         <div class="stat-item">
             <div class="level-badge">1</div>
-            <div class="stat-label">级别</div>
+            <div class="stat-label" data-lang-key="level">级别</div>
         </div>
         <div class="xp-bar-container">
             <div class="xp-bar"></div>
         </div>
         <div class="stat-item">
             <div class="stat-value">0</div>
-            <div class="stat-label">已学单词</div>
+            <div class="stat-label" data-lang-key="words-learned">已学单词</div>
         </div>
         <div class="stat-item">
             <div class="stat-value">0</div>
-            <div class="stat-label">掌握单词</div>
+            <div class="stat-label" data-lang-key="words-mastered">掌握单词</div>
         </div>
         <div class="stat-item">
             <div class="stat-value">0</div>
-            <div class="stat-label">今日学习</div>
+            <div class="stat-label" data-lang-key="today-learned">今日学习</div>
         </div>
     </div>
 
     <!-- Actions bar -->
     <div class="actions-bar">
         <button class="action-btn secondary" id="startQuizBtn">
-            <i class="fas fa-play-circle"></i> 开始测验
+            <i class="fas fa-play-circle"></i> <span data-lang-key="start-quiz">开始测验</span>
         </button>
-        <!-- <button class="action-btn primary" id="badgesBtn">
-            <i class="fas fa-award"></i> 徽章
-        </button> -->
+        <button class="action-btn primary" id="exportImportBtn">
+            <i class="fas fa-file-export"></i> <span data-lang-key="export-import">导出/导入</span>
+        </button>
         <button class="action-btn tertiary" id="addCategoryBtn">
-            <i class="fas fa-folder-plus"></i> 添加类别
+            <i class="fas fa-folder-plus"></i> <span data-lang-key="add-category">添加类别</span>
         </button>
     </div>
 
     <div class="language-toggle">
-        <button id="fr-to-en-btn" class="active">法语→英语</button>
-        <button id="en-to-fr-btn">英语→法语</button>
+        <button id="fr-to-en-btn" class="active"><span data-lang-key="fr-to-en">法语→英语</span></button>
+        <button id="en-to-fr-btn"><span data-lang-key="en-to-fr">英语→法语</span></button>
     </div>
 
     <div class="board" id="board"></div>
 
     <div class="add-category-container">
         <button class="add-category-btn" id="addRootCategoryBtn">
-            <i class="fas fa-plus-circle"></i> 添加根类别
+            <i class="fas fa-plus-circle"></i> <span data-lang-key="add-root-category">添加根类别</span>
         </button>
     </div>
 
@@ -1119,78 +1195,78 @@
     <!-- Modals -->
     <div class="modal" id="categoryModal">
         <div class="modal-content">
-            <h3>添加新类别</h3>
+            <h3 data-lang-key="add-new-category">添加新类别</h3>
             <input type="text" id="categoryNameInput" placeholder="类别名称">
             <select id="parentCategorySelect">
-                <option value="">根类别 (无父类别)</option>
+                <option value="" data-lang-key="root-category">根类别 (无父类别)</option>
                 <!-- Options will be populated dynamically -->
             </select>
             <div class="modal-buttons">
-                <button class="cancel-button" id="cancelCategoryButton">取消</button>
-                <button class="confirm-button" id="confirmCategoryButton">创建</button>
+                <button class="cancel-button" id="cancelCategoryButton" data-lang-key="cancel">取消</button>
+                <button class="confirm-button" id="confirmCategoryButton" data-lang-key="create">创建</button>
             </div>
         </div>
     </div>
 
     <div class="modal" id="editCategoryModal">
         <div class="modal-content">
-            <h3>编辑类别</h3>
+            <h3 data-lang-key="edit-category">编辑类别</h3>
             <input type="text" id="editCategoryNameInput" placeholder="类别名称">
             <select id="editParentCategorySelect">
-                <option value="">根类别 (无父类别)</option>
+                <option value="" data-lang-key="root-category">根类别 (无父类别)</option>
                 <!-- Options will be populated dynamically -->
             </select>
             <div class="modal-buttons">
-                <button class="cancel-button" id="cancelEditCategoryButton">取消</button>
-                <button class="confirm-button" id="confirmEditCategoryButton">保存</button>
+                <button class="cancel-button" id="cancelEditCategoryButton" data-lang-key="cancel">取消</button>
+                <button class="confirm-button" id="confirmEditCategoryButton" data-lang-key="save">保存</button>
             </div>
         </div>
     </div>
 
     <div class="modal" id="folderModal">
         <div class="modal-content">
-            <h3>添加新文件夹</h3>
+            <h3 data-lang-key="add-new-folder">添加新文件夹</h3>
             <input type="text" id="folderNameInput" placeholder="文件夹名称">
             <select id="folderCategorySelect">
-                <option value="">选择类别</option>
+                <option value="" data-lang-key="select-category">选择类别</option>
                 <!-- Options will be populated dynamically -->
             </select>
             <div class="modal-buttons">
-                <button class="cancel-button" id="cancelFolderButton">取消</button>
-                <button class="confirm-button" id="confirmFolderButton">创建</button>
+                <button class="cancel-button" id="cancelFolderButton" data-lang-key="cancel">取消</button>
+                <button class="confirm-button" id="confirmFolderButton" data-lang-key="create">创建</button>
             </div>
         </div>
     </div>
 
     <div class="modal" id="editFolderModal">
         <div class="modal-content">
-            <h3>编辑文件夹</h3>
+            <h3 data-lang-key="edit-folder">编辑文件夹</h3>
             <input type="text" id="editFolderNameInput" placeholder="文件夹名称">
             <select id="editFolderCategorySelect">
-                <option value="">选择类别</option>
+                <option value="" data-lang-key="select-category">选择类别</option>
                 <!-- Options will be populated dynamically -->
             </select>
             <div class="modal-buttons">
-                <button class="cancel-button" id="cancelEditFolderButton">取消</button>
-                <button class="confirm-button" id="confirmEditFolderButton">保存</button>
+                <button class="cancel-button" id="cancelEditFolderButton" data-lang-key="cancel">取消</button>
+                <button class="confirm-button" id="confirmEditFolderButton" data-lang-key="save">保存</button>
             </div>
         </div>
     </div>
 
     <div class="modal" id="deleteModal">
         <div class="modal-content">
-            <h3>确认删除</h3>
+            <h3 data-lang-key="confirm-delete">确认删除</h3>
             <p class="confirm-delete-text" id="deleteModalText">您确定要删除这个项目吗？</p>
             <div class="modal-buttons">
-                <button class="cancel-button" id="cancelDeleteButton">取消</button>
-                <button class="confirm-button" id="confirmDeleteButton">删除</button>
+                <button class="cancel-button" id="cancelDeleteButton" data-lang-key="cancel">取消</button>
+                <button class="confirm-button" id="confirmDeleteButton" data-lang-key="delete">删除</button>
             </div>
         </div>
     </div>
 
     <div class="modal" id="quizModal">
         <div class="modal-content">
-            <h3>词汇测验</h3>
+            <h3 data-lang-key="vocabulary-quiz">词汇测验</h3>
             <div class="quiz-container">
                 <div class="quiz-word">chien</div>
                 <div class="quiz-options">
@@ -1201,9 +1277,49 @@
                 </div>
                 <div class="quiz-feedback" style="display: none;">正确!</div>
                 <div class="quiz-buttons">
-                    <button class="quiz-next" id="quizNextBtn">下一题</button>
-                    <button class="quiz-close" id="quizCloseBtn">关闭</button>
+                    <button class="quiz-next" id="quizNextBtn" data-lang-key="next">下一题</button>
+                    <button class="quiz-close" id="quizCloseBtn" data-lang-key="close">关闭</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal pour export/import -->
+    <div class="modal" id="exportImportModal">
+        <div class="modal-content">
+            <h3 data-lang-key="export-import-title">导出/导入数据</h3>
+
+            <div class="export-import-container">
+                <div class="export-import-section">
+                    <h4 data-lang-key="export-title">导出数据</h4>
+                    <p class="import-instructions" data-lang-key="export-instructions">
+                        复制以下数据并保存到文件中，以备将来导入。
+                    </p>
+                    <textarea id="exportArea" class="export-area" readonly></textarea>
+                    <button id="copyExportBtn" class="confirm-button" style="margin-top: 10px; width: 100%;">
+                        <i class="fas fa-copy"></i> <span data-lang-key="copy-to-clipboard">复制到剪贴板</span>
+                    </button>
+                </div>
+
+                <div class="export-import-section">
+                    <h4 data-lang-key="import-title">导入数据</h4>
+                    <p class="import-instructions" data-lang-key="import-instructions">
+                        粘贴之前导出的数据以恢复您的词汇表。注意：这将替换所有现有数据。
+                    </p>
+                    <textarea id="importArea" class="export-area" placeholder="粘贴导出的数据在这里..."></textarea>
+                    <div class="modal-buttons" style="margin-top: 10px;">
+                        <button class="cancel-button" id="mergeImportButton">
+                            <i class="fas fa-object-group"></i> <span data-lang-key="merge-data">合并数据</span>
+                        </button>
+                        <button class="confirm-button" id="replaceImportButton">
+                            <i class="fas fa-file-import"></i> <span data-lang-key="replace-data">替换数据</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-buttons" style="margin-top: 20px;">
+                <button class="cancel-button" id="closeExportImportButton" data-lang-key="close">关闭</button>
             </div>
         </div>
     </div>
@@ -1221,6 +1337,14 @@
         let enToFrCache = JSON.parse(localStorage.getItem("enToFrCache")) || {};
         let wordTypeCache = JSON.parse(localStorage.getItem("wordTypeCache")) || {};
 
+        let caches = {
+            phoneticCache,
+            translationCache,
+            genderCache,
+            enToFrCache,
+            wordTypeCache
+        };
+
         // Données utilisateur
         let userData = JSON.parse(localStorage.getItem("userData")) || {
             level: 1,
@@ -1232,6 +1356,474 @@
             streak: 0,
             lastLogin: new Date().toDateString()
         };
+
+        // Configuration de la langue
+        const LANGS = {
+            fr: "Français",
+            en: "English",
+            cn: "中文"
+        };
+
+        // Dictionnaire de traductions
+        const translations = {
+            "app-title": {
+                fr: "Vocabulaire",
+                en: "Vocabulary",
+                cn: "词汇表"
+            },
+            "level": {
+                fr: "Niveau",
+                en: "Level",
+                cn: "级别"
+            },
+            "words-learned": {
+                fr: "Mots appris",
+                en: "Words learned",
+                cn: "已学单词"
+            },
+            "words-mastered": {
+                fr: "Mots maîtrisés",
+                en: "Words mastered",
+                cn: "掌握单词"
+            },
+            "today-learned": {
+                fr: "Appris aujourd'hui",
+                en: "Learned today",
+                cn: "今日学习"
+            },
+            "start-quiz": {
+                fr: "Commencer le quiz",
+                en: "Start quiz",
+                cn: "开始测验"
+            },
+            "export-import": {
+                fr: "Exporter/Importer",
+                en: "Export/Import",
+                cn: "导出/导入"
+            },
+            "add-category": {
+                fr: "Ajouter catégorie",
+                en: "Add category",
+                cn: "添加类别"
+            },
+            "fr-to-en": {
+                fr: "Français→Anglais",
+                en: "French→English",
+                cn: "法语→英语"
+            },
+            "en-to-fr": {
+                fr: "Anglais→Français",
+                en: "English→French",
+                cn: "英语→法语"
+            },
+            "add-root-category": {
+                fr: "Ajouter catégorie racine",
+                en: "Add root category",
+                cn: "添加根类别"
+            },
+            "export-import-title": {
+                fr: "Exporter/Importer les données",
+                en: "Export/Import Data",
+                cn: "导出/导入数据"
+            },
+            "export-title": {
+                fr: "Exporter les données",
+                en: "Export Data",
+                cn: "导出数据"
+            },
+            "export-instructions": {
+                fr: "Copiez les données ci-dessous et enregistrez-les dans un fichier pour une importation future.",
+                en: "Copy the data below and save it to a file for future import.",
+                cn: "复制以下数据并保存到文件中，以备将来导入。"
+            },
+            "copy-to-clipboard": {
+                fr: "Copier dans le presse-papiers",
+                en: "Copy to clipboard",
+                cn: "复制到剪贴板"
+            },
+            "import-title": {
+                fr: "Importer les données",
+                en: "Import Data",
+                cn: "导入数据"
+            },
+            "import-instructions": {
+                fr: "Collez les données exportées précédemment pour restaurer votre vocabulaire. Attention : cela remplacera toutes les données existantes.",
+                en: "Paste previously exported data to restore your vocabulary. Note: this will replace all existing data.",
+                cn: "粘贴之前导出的数据以恢复您的词汇表。注意：这将替换所有现有数据。"
+            },
+            "merge-data": {
+                fr: "Fusionner les données",
+                en: "Merge data",
+                cn: "合并数据"
+            },
+            "replace-data": {
+                fr: "Remplacer les données",
+                en: "Replace data",
+                cn: "替换数据"
+            },
+            "close": {
+                fr: "Fermer",
+                en: "Close",
+                cn: "关闭"
+            },
+            "cancel": {
+                fr: "Annuler",
+                en: "Cancel",
+                cn: "取消"
+            },
+            "create": {
+                fr: "Créer",
+                en: "Create",
+                cn: "创建"
+            },
+            "save": {
+                fr: "Enregistrer",
+                en: "Save",
+                cn: "保存"
+            },
+            "delete": {
+                fr: "Supprimer",
+                en: "Delete",
+                cn: "删除"
+            },
+            "confirm-delete": {
+                fr: "Confirmer la suppression",
+                en: "Confirm deletion",
+                cn: "确认删除"
+            },
+            "empty-category-message": {
+                fr: "Cette catégorie est vide. Ajoutez un dossier ou une sous-catégorie.",
+                en: "This category is empty. Add a folder or subcategory.",
+                cn: "此类别为空。添加一个文件夹或子类别。"
+            },
+            "no-categories-message": {
+                fr: "Pas de catégories. Créez une catégorie racine pour commencer.",
+                en: "No categories. Create a root category to start.",
+                cn: "没有类别。请创建一个根类别开始使用。"
+            },
+            "add-new-word": {
+                fr: "Ajouter un nouveau mot",
+                en: "Add new word",
+                cn: "添加新单词"
+            },
+            "add-new-french-word": {
+                fr: "Ajouter un nouveau mot français",
+                en: "Add new French word",
+                cn: "添加新法语单词"
+            },
+            "add-new-english-word": {
+                fr: "Ajouter un nouveau mot anglais",
+                en: "Add new English word",
+                cn: "添加新英语词汇"
+            },
+            "add": {
+                fr: "Ajouter",
+                en: "Add",
+                cn: "添加"
+            },
+            "no-words": {
+                fr: "Pas de mots dans ce dossier",
+                en: "No words in this folder",
+                cn: "此文件夹中没有单词"
+            },
+            "loading": {
+                fr: "Chargement...",
+                en: "Loading...",
+                cn: "加载中..."
+            },
+            "add-comment": {
+                fr: "Ajouter un commentaire...",
+                en: "Add a comment...",
+                cn: "添加评论..."
+            },
+            "root-category": {
+                fr: "Catégorie racine (pas de parent)",
+                en: "Root category (no parent)",
+                cn: "根类别 (无父类别)"
+            },
+            "add-new-category": {
+                fr: "Ajouter une nouvelle catégorie",
+                en: "Add new category",
+                cn: "添加新类别"
+            },
+            "edit-category": {
+                fr: "Modifier la catégorie",
+                en: "Edit category",
+                cn: "编辑类别"
+            },
+            "add-new-folder": {
+                fr: "Ajouter un nouveau dossier",
+                en: "Add new folder",
+                cn: "添加新文件夹"
+            },
+            "edit-folder": {
+                fr: "Modifier le dossier",
+                en: "Edit folder",
+                cn: "编辑文件夹"
+            },
+            "select-category": {
+                fr: "Sélectionner une catégorie",
+                en: "Select category",
+                cn: "选择类别"
+            },
+            "vocabulary-quiz": {
+                fr: "Quiz de vocabulaire",
+                en: "Vocabulary quiz",
+                cn: "词汇测验"
+            },
+            "next": {
+                fr: "Suivant",
+                en: "Next",
+                cn: "下一题"
+            },
+            "success": {
+                fr: "Succès",
+                en: "Success",
+                cn: "成功"
+            },
+            "error": {
+                fr: "Erreur",
+                en: "Error",
+                cn: "错误"
+            },
+            "congrats": {
+                fr: "Félicitations!",
+                en: "Congratulations!",
+                cn: "恭喜!"
+            },
+            "xp-gained": {
+                fr: "Vous avez gagné 10 points d'expérience!",
+                en: "You gained 10 experience points!",
+                cn: "您获得了10个经验值!"
+            },
+            "level-up": {
+                fr: "Vous avez atteint le niveau ",
+                en: "You reached level ",
+                cn: "您已升至 "
+            },
+            "export-success": {
+                fr: "Données copiées dans le presse-papiers",
+                en: "Data copied to clipboard",
+                cn: "数据已复制到剪贴板"
+            },
+            "import-success": {
+                fr: "Importation réussie",
+                en: "Import successful",
+                cn: "导入成功"
+            },
+            "import-merge-success": {
+                fr: "Fusion des données réussie",
+                en: "Data merge successful",
+                cn: "数据合并成功"
+            },
+            "invalid-data": {
+                fr: "Format de données invalide",
+                en: "Invalid data format",
+                cn: "数据格式无效"
+            }
+        };
+
+        // Fonction pour changer la langue de l'interface
+        function changeLanguage(lang) {
+            if (!LANGS[lang]) return;
+
+            // Mettre à jour la langue active
+            userData.language = lang;
+            localStorage.setItem("userData", JSON.stringify(userData));
+
+            // Mettre à jour les boutons de langue
+            document.querySelectorAll('.language-selector button').forEach(btn => {
+                btn.classList.toggle('active', btn.id === `lang-${lang}`);
+            });
+
+            // Mettre à jour le titre principal
+            document.getElementById('app-title').textContent = translations["app-title"][lang];
+
+            // Mettre à jour tous les éléments avec data-lang-key
+            document.querySelectorAll('[data-lang-key]').forEach(el => {
+                const key = el.getAttribute('data-lang-key');
+                if (translations[key] && translations[key][lang]) {
+                    el.textContent = translations[key][lang];
+                }
+            });
+
+            // Mettre à jour les placeholders des champs de saisie pour les mots
+            updateWordInputPlaceholders();
+
+            // Re-render pour appliquer les changements de langue
+            renderCategories();
+        }
+
+        // Fonction pour mettre à jour les placeholders des champs de saisie pour les mots
+        function updateWordInputPlaceholders() {
+            const lang = userData.language || 'cn';
+            const inputs = document.querySelectorAll('.add-word-input');
+            const mode = document.getElementById('fr-to-en-btn').classList.contains('active')
+                ? 'fr-to-en' : 'en-to-fr';
+
+            const placeholder = mode === 'fr-to-en'
+                ? translations["add-new-french-word"][lang]
+                : translations["add-new-english-word"][lang];
+
+            inputs.forEach(input => {
+                input.placeholder = placeholder;
+            });
+        }
+
+        // Système d'export/import
+        // Fonction pour préparer les données à exporter
+        function prepareDataForExport() {
+            const exportData = {
+                version: "1.0",
+                timestamp: new Date().toISOString(),
+                categories: categories,
+                folders: folders,
+                words: words,
+                caches: caches
+            }
+
+            return JSON.stringify(exportData, null, 2);
+        }
+
+        // Fonction pour afficher le modal d'export/import
+        function showExportImportModal() {
+            const exportData = prepareDataForExport();
+            document.getElementById('exportArea').value = exportData;
+            document.getElementById('exportImportModal').style.display = 'flex';
+        }
+
+        // Fonction pour copier les données exportées dans le presse-papiers
+        function copyExportDataToClipboard() {
+            const exportArea = document.getElementById('exportArea');
+            exportArea.select();
+            document.execCommand('copy');
+
+            showNotification(
+                translations["success"][userData.language],
+                translations["copy-to-clipboard"][userData.language],
+                'check'
+            );
+        }
+
+        // Fonction pour importer des données (remplacement)
+        function importDataReplace() {
+            try {
+                const importData = JSON.parse(document.getElementById('importArea').value);
+
+                // Vérifier si les données sont valides
+                if (!importData.categories || !importData.folders || !importData.words) {
+                    throw new Error("Format de données invalide");
+                }
+
+                // Remplacer les données existantes
+                categories = importData.categories;
+                folders = importData.folders;
+                words = importData.words;
+
+                // Remplacer les caches si disponibles
+                if (importData.caches) {
+                    caches = importData.caches;
+                    localStorage.setItem("phoneticCache", JSON.stringify(caches.phoneticCache || {}));
+                    localStorage.setItem("translationCache", JSON.stringify(caches.translationCache || {}));
+                    localStorage.setItem("genderCache", JSON.stringify(caches.genderCache || {}));
+                    localStorage.setItem("enToFrCache", JSON.stringify(caches.enToFrCache || {}));
+                    localStorage.setItem("wordTypeCache", JSON.stringify(caches.wordTypeCache || {}));
+                }
+
+                // Sauvegarder dans le stockage local
+                localStorage.setItem("categories", JSON.stringify(categories));
+                localStorage.setItem("folders", JSON.stringify(folders));
+                localStorage.setItem("words", JSON.stringify(words));
+
+                // Mettre à jour l'interface
+                changeLanguage(userData.language || 'cn');
+                renderCategories();
+                updateUserStats();
+
+                // Fermer le modal
+                document.getElementById('exportImportModal').style.display = 'none';
+
+                showNotification(
+                    translations["success"][userData.language],
+                    "Import réussi",
+                    'check'
+                );
+
+            } catch (error) {
+                showNotification(
+                    translations["error"][userData.language],
+                    error.message,
+                    'exclamation-triangle'
+                );
+            }
+        }
+
+        // Fonction pour fusionner les données importées avec les données existantes
+        function importDataMerge() {
+            try {
+                const importData = JSON.parse(document.getElementById('importArea').value);
+
+                // Vérifier si les données sont valides
+                if (!importData.categories || !importData.folders || !importData.words) {
+                    throw new Error("Format de données invalide");
+                }
+
+                // Fusionner les catégories
+                const existingCategoryIds = categories.map(c => c.id);
+                const newCategories = importData.categories.filter(c => !existingCategoryIds.includes(c.id));
+                categories = [...categories, ...newCategories];
+
+                // Fusionner les dossiers
+                const existingFolderIds = folders.map(f => f.id);
+                const newFolders = importData.folders.filter(f => !existingFolderIds.includes(f.id));
+                folders = [...folders, ...newFolders];
+
+                // Fusionner les mots
+                const existingWordIds = words.map(w => w.id);
+                const newWords = importData.words.filter(w => !existingWordIds.includes(w.id));
+                words = [...words, ...newWords];
+
+                // Fusionner les caches si disponibles
+                if (importData.caches) {
+                    caches.phoneticCache = { ...caches.phoneticCache, ...importData.caches.phoneticCache };
+                    caches.translationCache = { ...caches.translationCache, ...importData.caches.translationCache };
+                    caches.genderCache = { ...caches.genderCache, ...importData.caches.genderCache };
+                    caches.enToFrCache = { ...caches.enToFrCache, ...importData.caches.enToFrCache };
+                    caches.wordTypeCache = { ...caches.wordTypeCache, ...importData.caches.wordTypeCache };
+
+                    localStorage.setItem("phoneticCache", JSON.stringify(caches.phoneticCache));
+                    localStorage.setItem("translationCache", JSON.stringify(caches.translationCache));
+                    localStorage.setItem("genderCache", JSON.stringify(caches.genderCache));
+                    localStorage.setItem("enToFrCache", JSON.stringify(caches.enToFrCache));
+                    localStorage.setItem("wordTypeCache", JSON.stringify(caches.wordTypeCache));
+                }
+
+                // Sauvegarder dans le stockage local
+                localStorage.setItem("categories", JSON.stringify(categories));
+                localStorage.setItem("folders", JSON.stringify(folders));
+                localStorage.setItem("words", JSON.stringify(words));
+
+                // Mettre à jour l'interface
+                renderCategories();
+                updateUserStats();
+
+                // Fermer le modal
+                document.getElementById('exportImportModal').style.display = 'none';
+
+                showNotification(
+                    translations["success"][userData.language],
+                    "Fusion réussie",
+                    'check'
+                );
+
+            } catch (error) {
+                showNotification(
+                    translations["error"][userData.language],
+                    error.message,
+                    'exclamation-triangle'
+                );
+            }
+        }
 
         // Variables temporaires
         let currentDeleteTarget = { id: "", type: "" };
@@ -2887,6 +3479,20 @@
                     currentEditFolder = null;
                     currentDeleteTarget = { id: "", type: "" };
                 }
+            });
+
+            // Gestionnaires pour le changement de langue
+            document.getElementById('lang-fr').addEventListener('click', () => changeLanguage('fr'));
+            document.getElementById('lang-en').addEventListener('click', () => changeLanguage('en'));
+            document.getElementById('lang-cn').addEventListener('click', () => changeLanguage('cn'));
+
+            // Gestionnaires pour l'export/import
+            document.getElementById('exportImportBtn').addEventListener('click', showExportImportModal);
+            document.getElementById('copyExportBtn').addEventListener('click', copyExportDataToClipboard);
+            document.getElementById('replaceImportButton').addEventListener('click', importDataReplace);
+            document.getElementById('mergeImportButton').addEventListener('click', importDataMerge);
+            document.getElementById('closeExportImportButton').addEventListener('click', () => {
+                document.getElementById('exportImportModal').style.display = 'none';
             });
         }
 
